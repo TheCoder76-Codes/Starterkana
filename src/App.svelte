@@ -1,0 +1,100 @@
+<script>
+	import Setup from './lib/Setup.svelte'
+	import Dash from './lib/Dashboard.svelte'
+	import ErrorPopup from './lib/ErrorPopup.svelte'
+	import Actor from './lib/Actor.svelte'
+	let setup = false
+	let belts = ['white', 'yellow', 'orange', 'green', 'blue', 'purple', 'red', 'brown', 'black']
+	let userData = {}
+	let errors = []
+	// {
+	// 	hiragana: {
+	// 		white: false,
+	// 		yellow: false,
+	// 		orange: false,
+	// 		green: false,
+	// 		blue: false,
+	// 		purple: false,
+	// 		red: false,
+	// 		brown: false,
+	// 		black: false,
+	// 	},
+	// 	katakana: {
+	// 		white: false,
+	// 		yellow: false,
+	// 		orange: false,
+	// 		green: false,
+	// 		blue: false,
+	// 		purple: false,
+	// 		red: false,
+	// 		brown: false,
+	// 		black: false,
+	// 	},
+	// 	name: '',
+	// 	points: 0,
+	//	cookies: true,
+	// }
+	if (!localStorage.getItem('isSetUp')) {
+		setup = false
+	} else if (localStorage.getItem('isSetUp') == 'true') {
+		setup = true
+		if (localStorage.getItem('userData')) {
+			userData = JSON.parse(localStorage.getItem('userData'))
+		} else {
+			setup = false
+			userData = {}
+		}
+	} else {
+		setup = false
+	}
+
+	let newError = false
+
+	window.onerror = (event, source, lineno, colno, error) => {
+		if (localStorage.getItem('errors')) {
+			errors = JSON.parse(localStorage.getItem('errors'))
+			errors.push({
+				event,
+				source,
+				lineno,
+				colno,
+				error,
+				date: new Date(),
+			})
+			if (userData.cookies) {
+				localStorage.setItem('errors', JSON.stringify(errors))
+			}
+		} else {
+			errors.push({
+				event,
+				source,
+				lineno,
+				colno,
+				error,
+			})
+			if (userData.cookies) {
+				localStorage.setItem('errors', JSON.stringify(errors))
+			}
+		}
+		newError = true
+		return false
+	}
+	let actor = false
+
+	const urlParams = new URLSearchParams(window.location.search)
+	if (urlParams.has('actor')) actor = true
+</script>
+
+{#if newError}
+	<ErrorPopup />
+{/if}
+
+{#if actor}
+	<Actor bind:userData bind:errors />
+{:else if !setup}
+	<Setup bind:setup bind:userData />
+{:else if setup}
+	<Dash bind:userData />
+{:else}
+	<Setup bind:setup bind:userData />
+{/if}
