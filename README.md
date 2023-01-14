@@ -1,6 +1,6 @@
 # Starterkana
 
-This is the new version of Starterkana. The website is live [here](http://www.starterkana.onrender.com). If you wish to see the old version of starterkana, you can see it [here](http://www.starterkana.web.app)
+This is the new version of Starterkana. The website is live [here](http://starterkana.onrender.com). If you wish to see the old version of starterkana, you can see it [here](http://starterkana.web.app)
 
 Photos:
 ![](imgs/dashboard.png)
