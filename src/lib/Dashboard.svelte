@@ -11,7 +11,7 @@
 	let openPage = () => {}
 
 	let vNumber = ''
-	fetch('https://api.github.com/repos/TheCoder76-Codes/StarterKana/releases/latest')
+	fetch('https://api.github.com/repos/TheCoder76-Codes/Starterkana/releases/latest')
 		.then((res) => res.json())
 		.then((res) => {
 			vNumber = res.tag_name
