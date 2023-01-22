@@ -8,12 +8,79 @@
 	let euid = ''
 
 	function checkuid() {
+		if (userData.uid == euid) {
+			error = 'You cannot enter your own UID!'
+			return
+		}
 		if (userData.group.scores) {
 			let f = userData.group.scores.filter((item) => item.uid == euid)
 			if (f.length > 0) {
-				userData.uid = euid
-				error = null
-				success = true
+				checking = true
+				fetch(userData.groupID, {
+					method: 'GET',
+				})
+					.then((res) => res.json())
+					.then((res) => {
+						userData.group = res
+						userData = userData
+						let me = userData.group.scores.filter((item) => item.uid == euid)
+						if (me.length > 0 && me[0].points < userData.points) {
+							let withoutMe = userData.group.scores.filter((item) => item.uid != userData.uid)
+							withoutMe = userData.group.scores.filter((item) => item.uid != euid)
+
+							withoutMe.push({
+								name: userData.name,
+								points: userData.points,
+								uid: euid,
+							})
+							userData.group.scores = withoutMe
+
+							let stringify = JSON.stringify(userData.group)
+							fetch(userData.groupID, {
+								method: 'PUT',
+								headers: {
+									'Content-Type': 'application/json',
+									'Content-Length': String(stringify.length),
+								},
+								body: stringify,
+							}).then((res) => {
+								userData.uid = euid
+								error = null
+								success = true
+								checking = false
+							})
+						} else if (me.length > 0) {
+							let withoutMe = userData.group.scores.filter((item) => item.uid != userData.uid)
+
+							userData.group.scores = withoutMe
+
+							let stringify = JSON.stringify(userData.group)
+							fetch(userData.groupID, {
+								method: 'PUT',
+								headers: {
+									'Content-Type': 'application/json',
+									'Content-Length': String(stringify.length),
+								},
+								body: stringify,
+							}).then((res) => {
+								userData.uid = euid
+								error = null
+								success = true
+								checking = false
+							})
+						} else {
+							// Error: entered UID doesn't exist in remote group
+							error = "That User ID doesn't exist."
+						}
+						userData.group.scores.sort((a, b) => {
+							if (a.points > b.points) return -1 // any negative number works
+							if (a.points < b.points) return 1 // any positive number works
+							return 0 // equal values MUST yield zero
+						})
+						if (userData.cookies) {
+							localStorage.setItem('userData', JSON.stringify(userData))
+						}
+					})
 			} else {
 				error = "That User ID doesn't exist."
 			}
