@@ -31,29 +31,33 @@
 				userData.groupID = gid
 				userData.group = res
 				userData = userData
-				let withoutMe = userData.group.scores.filter((item) => item.uid != userData.uid)
-				withoutMe.push({
-					name: userData.name,
-					points: userData.points,
-					uid: userData.uid,
-				})
-				userData.group.scores = withoutMe
+				let me = userData.group.scores.filter((item) => item.uid == userData.uid)
+				if (me.length > 0 && me[0].points < userData.points) {
+					let withoutMe = userData.group.scores.filter((item) => item.uid != userData.uid)
+					withoutMe.push({
+						name: userData.name,
+						points: userData.points,
+						uid: userData.uid,
+					})
+					userData.group.scores = withoutMe
+
+					let stringify = JSON.stringify(userData.group)
+					fetch(userData.groupID, {
+						method: 'PUT',
+						headers: {
+							'Content-Type': 'application/json',
+							'Content-Length': String(stringify.length),
+						},
+						body: stringify,
+					})
+						.then((res) => res.json())
+						.catch((err) => (gidErr = true))
+				}
 				userData.group.scores.sort((a, b) => {
 					if (a.points > b.points) return -1 // any negative number works
 					if (a.points < b.points) return 1 // any positive number works
 					return 0 // equal values MUST yield zero
 				})
-				let stringify = JSON.stringify(userData.group)
-				fetch(userData.groupID, {
-					method: 'PUT',
-					headers: {
-						'Content-Type': 'application/json',
-						'Content-Length': String(stringify.length),
-					},
-					body: stringify,
-				})
-					.then((res) => res.json())
-					.catch((err) => (gidErr = true))
 				if (userData.cookies) {
 					localStorage.setItem('userData', JSON.stringify(userData))
 				}
@@ -130,27 +134,31 @@
 			.then((res) => {
 				userData.group = res
 				userData = userData
-				let withoutMe = userData.group.scores.filter((item) => item.uid != userData.uid)
-				withoutMe.push({
-					name: userData.name,
-					points: userData.points,
-					uid: userData.uid,
-				})
-				userData.group.scores = withoutMe
+				let me = userData.group.scores.filter((item) => item.uid == userData.uid)
+				if (me.length > 0 && me[0].points < userData.points) {
+					let withoutMe = userData.group.scores.filter((item) => item.uid != userData.uid)
+					withoutMe.push({
+						name: userData.name,
+						points: userData.points,
+						uid: userData.uid,
+					})
+					userData.group.scores = withoutMe
+
+					let stringify = JSON.stringify(userData.group)
+					fetch(userData.groupID, {
+						method: 'PUT',
+						headers: {
+							'Content-Type': 'application/json',
+							'Content-Length': String(stringify.length),
+						},
+						body: stringify,
+					}).then((res) => res.json())
+				}
 				userData.group.scores.sort((a, b) => {
 					if (a.points > b.points) return -1 // any negative number works
 					if (a.points < b.points) return 1 // any positive number works
 					return 0 // equal values MUST yield zero
 				})
-				let stringify = JSON.stringify(userData.group)
-				fetch(userData.groupID, {
-					method: 'PUT',
-					headers: {
-						'Content-Type': 'application/json',
-						'Content-Length': String(stringify.length),
-					},
-					body: stringify,
-				}).then((res) => res.json())
 				if (userData.cookies) {
 					localStorage.setItem('userData', JSON.stringify(userData))
 				}

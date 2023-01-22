@@ -6,6 +6,7 @@
 	let setup = false
 	let belts = ['white', 'yellow', 'orange', 'green', 'blue', 'purple', 'red', 'brown', 'black']
 	let userData = {}
+	let streaks = []
 	let errors = []
 	// {
 	// 	hiragana: {
@@ -90,11 +91,11 @@
 {/if}
 
 {#if actor}
-	<Actor bind:userData bind:errors />
+	<Actor bind:userData bind:errors bind:streaks />
 {:else if !setup}
 	<Setup bind:setup bind:userData />
 {:else if setup}
-	<Dash bind:userData />
+	<Dash bind:userData bind:streaks />
 {:else}
 	<Setup bind:setup bind:userData />
 {/if}

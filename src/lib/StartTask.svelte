@@ -5,6 +5,7 @@
 	export let activeTask
 	export let userData
 	export let sTask
+	export let streaks
 
 	let invalid = false
 
@@ -378,13 +379,13 @@
 
 {#if inTask}
 	{#if activeTask.type == 0}
-		<Quiz bind:userData bind:activeTask bind:sTask />
+		<Quiz bind:userData bind:activeTask bind:sTask bind:streaks />
 	{:else if activeTask.type == 1}
-		<Learn bind:userData bind:activeTask bind:sTask />
+		<Learn bind:userData bind:activeTask bind:sTask bind:streaks />
 	{:else if activeTask.type == 2}
-		<SpeedSkills bind:userData bind:activeTask bind:sTask />
+		<SpeedSkills bind:userData bind:activeTask bind:sTask bind:streaks />
 	{:else if activeTask.type == 3}
-		<Quiz bind:userData bind:activeTask bind:sTask />
+		<Quiz bind:userData bind:activeTask bind:sTask bind:streaks />
 	{/if}
 {:else}
 	<h1 class="text-2xl font-semibold">Starting task</h1>

@@ -2,9 +2,36 @@
 	export let activeTask
 	export let userData
 	export let sTask
+	export let streaks
 	import * as wanakana from 'wanakana'
 	import { onMount } from 'svelte'
 	import ViewResults from './ViewResults.svelte'
+
+	function streaksCheck() {
+		if (streaks.length > 0) {
+			// @ts-ignore
+			let daysBetween = parseInt((new Date() - streaks[streaks.length - 1].date) / 1000 / 60 / 60 / 24)
+
+			if (daysBetween > 1) {
+				streaks = []
+			}
+		}
+		let d = new Date()
+		d.setHours(0, 0, 0, 0)
+		let item = {
+			date: d,
+		}
+		let filteredArray = streaks.filter(function (item, pos) {
+			return streaks.indexOf(item) == pos
+		})
+		if (filteredArray.length <= 0) {
+			streaks.push(item)
+		}
+
+		if (userData.cookies) {
+			localStorage.setItem('streaks', JSON.stringify(streaks))
+		}
+	}
 
 	let hiragana = {
 		a: [
@@ -455,6 +482,7 @@
 		countdownInt = false
 		allowedReload = false
 		clearInterval(fs)
+		streaksCheck()
 		if (activeTask.type == 3) {
 			document.removeEventListener('blur', (e) => {
 				e.preventDefault()

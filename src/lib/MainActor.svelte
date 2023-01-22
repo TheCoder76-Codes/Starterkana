@@ -2,6 +2,9 @@
 	export let userData
 	export let errors
 	export let fullAccess
+	export let streaks
+
+	streaks = JSON.stringify(streaks)
 	function caps(str) {
 		return str.charAt(0).toUpperCase() + str.slice(1)
 	}
@@ -25,6 +28,8 @@
 		if (userData.cookies) {
 			localStorage.setItem('userData', JSON.stringify(userData))
 			localStorage.setItem('isSetUp', JSON.stringify(isSetup))
+			localStorage.setItem('streaks', JSON.stringify(streaks))
+			streaks = JSON.parse(streaks)
 		}
 	}
 	function removeItem(item) {
@@ -67,6 +72,12 @@
 					type="text"
 					class="mt-2 text-lg border rounded-lg border-gray-300 hover:border-gray-400 focus:border-gray-500 outline-none p-2"
 					bind:value={userData.points}
+				/>
+				<h1 class="text-xl font-medium mt-2.5">Streaks</h1>
+				<input
+					type="text"
+					class="mt-2 text-lg border rounded-lg border-gray-300 hover:border-gray-400 focus:border-gray-500 outline-none p-2"
+					bind:value={streaks}
 				/>
 				<h1 class="text-xl font-medium">Group ID</h1>
 				<input
