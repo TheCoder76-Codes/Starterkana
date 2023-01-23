@@ -4,6 +4,7 @@
 	import ReccomendTask from './ReccomendTask.svelte'
 	import StartTask from './StartTask.svelte'
 	import Sync from './Sync.svelte'
+	import MobileWarning from './MobileWarning.svelte'
 	export let userData
 	export let streaks
 	let dev = false
@@ -48,6 +49,8 @@
 	// learn of next belt (except black)
 	// test of current belt ()
 </script>
+
+<MobileWarning />
 
 {#if sTask || activeTask}
 	<main class="p-10 h-screen overflow-x-hidden">
