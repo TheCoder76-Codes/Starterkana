@@ -8,31 +8,33 @@
 	import ViewResults from './ViewResults.svelte'
 
 	function streaksCheck() {
-		if (streaks.length > 0) {
-			// @ts-ignore
-			let daysBetween = parseInt((new Date() - streaks[streaks.length - 1].date) / 1000 / 60 / 60 / 24)
-
-			if (daysBetween > 1) {
-				streaks = []
+		let lastItem = streaks[streaks.length - 1]
+		if (lastItem) {
+			let ldate = new Date(lastItem) // last date
+			let cdate = new Date()
+			let ydate = new Date() // yesterdays date
+			cdate.setHours(0, 0, 0, 0)
+			ldate.setHours(0, 0, 0, 0)
+			ydate.setDate(cdate.getDate() - 1)
+			ydate.setHours(0, 0, 0, 0)
+			if (ldate.toDateString() == ydate.toDateString()) {
+				// was yesterday
+				streaks.push(cdate)
+			} else if (ldate.toDateString() == cdate.toDateString()) {
+				// was today
+				// nothing
+			} else {
+				// error
+				throw new Error('Streaks error while setting date')
 			}
+		} else {
+			// array is empty
+			streaks.push(new Date())
 		}
-		let d = new Date()
-		d.setHours(0, 0, 0, 0)
-		let item = {
-			date: d,
-		}
-		let filteredArray = streaks.filter(function (item, pos) {
-			return streaks.indexOf(item) == pos
-		})
-		if (filteredArray.length <= 0) {
-			streaks.push(item)
-		}
-
 		if (userData.cookies) {
 			localStorage.setItem('streaks', JSON.stringify(streaks))
 		}
 	}
-
 	let hiragana = {
 		a: [
 			['あ', 'a'],
