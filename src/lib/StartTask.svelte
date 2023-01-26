@@ -9,6 +9,8 @@
 
 	let invalid = false
 
+	let isDev = new URLSearchParams(window.location.search).has('dev')
+
 	if (!activeTask) {
 		activeTask = {
 			hiragana: [],
@@ -414,10 +416,12 @@
 				<input type="radio" name="answerIn" bind:group={activeTask.answerIn} value={0} />
 				Answer in Romaji
 			</label> <br />
-			<label class="text-lg m-2">
-				<input type="radio" name="answerIn" bind:group={activeTask.answerIn} value={1} />
-				Answer in Japanese
-			</label> <br />
+			{#if isDev}
+				<label class="text-lg m-2">
+					<input type="radio" name="answerIn" bind:group={activeTask.answerIn} value={1} />
+					Answer in Japanese
+				</label> <br />
+			{/if}
 		</div>
 		<div class="text-center">
 			<h1 class="text-xl font-semibold">Hiragana</h1>
