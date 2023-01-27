@@ -35,8 +35,8 @@
 				// was today
 				// nothing
 			} else {
-				// error
-				throw new Error('Streaks error while setting date')
+				// lost streaks
+				streaks = []
 			}
 		} else {
 			// array is empty
