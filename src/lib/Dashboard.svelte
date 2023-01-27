@@ -5,6 +5,7 @@
 	import StartTask from './StartTask.svelte'
 	import Sync from './Sync.svelte'
 	import MobileWarning from './MobileWarning.svelte'
+	import Notice from './Notice.svelte'
 	export let userData
 	export let streaks
 	let dev = false
@@ -51,6 +52,7 @@
 </script>
 
 <MobileWarning />
+<Notice bind:userData />
 
 {#if sTask || activeTask}
 	<main class="p-10 h-screen overflow-x-hidden">
