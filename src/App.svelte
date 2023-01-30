@@ -3,6 +3,7 @@
 	import Dash from './lib/Dashboard.svelte'
 	import ErrorPopup from './lib/ErrorPopup.svelte'
 	import Actor from './lib/Actor.svelte'
+	import Recovery from './lib/Recovery.svelte'
 	let setup = false
 	let belts = ['white', 'yellow', 'orange', 'green', 'blue', 'purple', 'red', 'brown', 'black']
 	let userData = {}
@@ -35,50 +36,53 @@
 	// 	points: 0,
 	//	cookies: true,
 	// }
-	if (!localStorage.getItem('isSetUp')) {
-		setup = false
-	} else if (localStorage.getItem('isSetUp') == 'true') {
-		setup = true
-		if (localStorage.getItem('userData')) {
-			userData = JSON.parse(localStorage.getItem('userData'))
+
+	let recovery = new URLSearchParams(window.location.search).has('recovery')
+	let newError = false
+	if (!recovery) {
+		if (!localStorage.getItem('isSetUp')) {
+			setup = false
+		} else if (localStorage.getItem('isSetUp') == 'true') {
+			setup = true
+			if (localStorage.getItem('userData')) {
+				userData = JSON.parse(localStorage.getItem('userData'))
+			} else {
+				setup = false
+				userData = {}
+			}
 		} else {
 			setup = false
-			userData = {}
 		}
-	} else {
-		setup = false
-	}
 
-	let newError = false
-
-	window.onerror = (event, source, lineno, colno, error) => {
-		if (localStorage.getItem('errors')) {
-			errors = JSON.parse(localStorage.getItem('errors'))
-			errors.push({
-				event,
-				source,
-				lineno,
-				colno,
-				error,
-				date: new Date(),
-			})
-			if (userData.cookies) {
-				localStorage.setItem('errors', JSON.stringify(errors))
+		window.onerror = (event, source, lineno, colno, error) => {
+			if (localStorage.getItem('errors')) {
+				errors = JSON.parse(localStorage.getItem('errors'))
+				errors.push({
+					event,
+					source,
+					lineno,
+					colno,
+					error,
+					date: new Date(),
+				})
+				if (userData.cookies) {
+					localStorage.setItem('errors', JSON.stringify(errors))
+				}
+			} else {
+				errors.push({
+					event,
+					source,
+					lineno,
+					colno,
+					error,
+				})
+				if (userData.cookies) {
+					localStorage.setItem('errors', JSON.stringify(errors))
+				}
 			}
-		} else {
-			errors.push({
-				event,
-				source,
-				lineno,
-				colno,
-				error,
-			})
-			if (userData.cookies) {
-				localStorage.setItem('errors', JSON.stringify(errors))
-			}
+			newError = true
+			return false
 		}
-		newError = true
-		return false
 	}
 	let actor = false
 
@@ -89,8 +93,9 @@
 {#if newError}
 	<ErrorPopup />
 {/if}
-
-{#if actor}
+{#if recovery}
+	<Recovery />
+{:else if actor}
 	<Actor bind:userData bind:errors bind:streaks />
 {:else if !setup}
 	<Setup bind:setup bind:userData />
