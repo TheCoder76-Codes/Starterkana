@@ -10,8 +10,10 @@
 	function streaksCheck() {
 		if (localStorage.getItem('streaks')) {
 			let ostreaks = JSON.parse(localStorage.getItem('streaks'))
-			if (!ostreaks[0].date) {
-				streaks = ostreaks
+			if (ostreaks[0]) {
+				if (!ostreaks[0].date) {
+					streaks = ostreaks
+				}
 			} else {
 				if (userData.cookies) {
 					localStorage.setItem('streaks', JSON.stringify([]))
@@ -30,7 +32,7 @@
 			ydate.setHours(0, 0, 0, 0)
 			if (ldate.toDateString() == ydate.toDateString()) {
 				// was yesterday
-				streaks.push(cdate)
+				// streaks.push(cdate) // removed as we are not adding streaks here
 			} else if (ldate.toDateString() == cdate.toDateString()) {
 				// was today
 				// nothing

@@ -47,8 +47,10 @@
 	function streaksCheck() {
 		if (localStorage.getItem('streaks')) {
 			let ostreaks = JSON.parse(localStorage.getItem('streaks'))
-			if (!ostreaks[0].date) {
-				streaks = ostreaks
+			if (ostreaks[0]) {
+				if (!ostreaks[0].date) {
+					streaks = ostreaks
+				}
 			} else {
 				if (userData.cookies) {
 					localStorage.setItem('streaks', JSON.stringify([]))
