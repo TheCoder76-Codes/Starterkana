@@ -32,7 +32,7 @@
 			ydate.setHours(0, 0, 0, 0)
 			if (ldate.toDateString() == ydate.toDateString()) {
 				// was yesterday
-				// streaks.push(cdate) // removed as we are not adding streaks here
+				streaks.push(cdate)
 			} else if (ldate.toDateString() == cdate.toDateString()) {
 				// was today
 				// nothing
