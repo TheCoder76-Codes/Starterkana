@@ -5,7 +5,6 @@
 	import StartTask from './StartTask.svelte'
 	import Sync from './Sync.svelte'
 	import MobileWarning from './MobileWarning.svelte'
-	import Notice from './Notice.svelte'
 	export let userData
 	export let streaks
 	let dev = false
@@ -45,6 +44,48 @@
 		setupSyncPage = true
 	}
 
+	function streaksCheck() {
+		if (localStorage.getItem('streaks')) {
+			let ostreaks = JSON.parse(localStorage.getItem('streaks'))
+			if (!ostreaks[0].date) {
+				streaks = ostreaks
+			} else {
+				if (userData.cookies) {
+					localStorage.setItem('streaks', JSON.stringify([]))
+				}
+				streaks = []
+			}
+		}
+		let lastItem = streaks[streaks.length - 1]
+		if (lastItem) {
+			let ldate = new Date(lastItem) // last date
+			let cdate = new Date()
+			let ydate = new Date() // yesterdays date
+			cdate.setHours(0, 0, 0, 0)
+			ldate.setHours(0, 0, 0, 0)
+			ydate.setDate(cdate.getDate() - 1)
+			ydate.setHours(0, 0, 0, 0)
+			if (ldate.toDateString() == ydate.toDateString()) {
+				// was yesterday
+				// streaks.push(cdate) // removed as we are not adding streaks here
+			} else if (ldate.toDateString() == cdate.toDateString()) {
+				// was today
+				// nothing
+			} else {
+				// lost streaks
+				streaks = []
+			}
+		} else {
+			// array is empty
+			streaks.push(new Date())
+		}
+		if (userData.cookies) {
+			localStorage.setItem('streaks', JSON.stringify(streaks))
+		}
+	}
+
+	streaksCheck()
+
 	// quiz and speed skills of previous belts
 	// quiz and learn and speed skills of current belt
 	// learn of next belt (except black)
@@ -52,7 +93,6 @@
 </script>
 
 <MobileWarning />
-<Notice bind:userData />
 
 {#if sTask || activeTask}
 	<main class="p-10 h-screen overflow-x-hidden">

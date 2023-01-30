@@ -27,7 +27,7 @@
 	function saveData() {
 		if (userData.cookies) {
 			localStorage.setItem('userData', JSON.stringify(userData))
-			localStorage.setItem('isSetUp', JSON.stringify(isSetup))
+			localStorage.setItem('isSetUp', isSetup.toString())
 			localStorage.setItem('streaks', JSON.stringify(streaks))
 			streaks = JSON.parse(streaks)
 		}
@@ -93,6 +93,8 @@
 				/> <button class="btn-main" on:click={() => (userData.uid = uid())}>Regnerate UID ↻</button>
 				<h1 class="text-xl font-medium mt-2.5">Cookies</h1>
 				<input type="checkbox" bind:checked={userData.cookies} />
+				<h1 class="text-xl font-medium mt-2.5">Migrated</h1>
+				<input type="checkbox" bind:checked={userData.migrated} />
 				<h1 class="text-xl font-medium mt-2.5">Setup State</h1>
 				<input type="checkbox" bind:checked={isSetup} />
 				<div class="block md:grid grid-cols-[1fr,1fr]">

@@ -3,6 +3,7 @@
 	import Dash from './lib/Dashboard.svelte'
 	import ErrorPopup from './lib/ErrorPopup.svelte'
 	import Actor from './lib/Actor.svelte'
+	import Migrate from './lib/Migrate.svelte'
 	let setup = false
 	let belts = ['white', 'yellow', 'orange', 'green', 'blue', 'purple', 'red', 'brown', 'black']
 	let userData = {}
@@ -81,9 +82,11 @@
 		return false
 	}
 	let actor = false
+	let migrate = false
 
 	const urlParams = new URLSearchParams(window.location.search)
 	if (urlParams.has('actor')) actor = true
+	if (urlParams.has('migrate') && urlParams.has('token')) migrate = true
 </script>
 
 {#if newError}
@@ -92,6 +95,8 @@
 
 {#if actor}
 	<Actor bind:userData bind:errors bind:streaks />
+{:else if migrate}
+	<Migrate bind:userData bind:migrate />
 {:else if !setup}
 	<Setup bind:setup bind:userData />
 {:else if setup}
