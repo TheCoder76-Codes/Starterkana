@@ -441,6 +441,7 @@
 		activeTask.totalCompleted = totalCompleted
 		activeTask.totalCorrect = totalCorrect
 		activeTask.percentage = percentage
+		activeTask.countingCorrect = countingCorrect
 		activeTask.time = totalTime
 
 		socket.emit('playerCompletedTask', activeTask, game, userData, (res) => (game = res))

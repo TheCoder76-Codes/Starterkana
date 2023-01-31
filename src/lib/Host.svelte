@@ -33,8 +33,8 @@
 		game = game2
 		if (showLeaderboard && game.task.type == 2) {
 			game.finishers.sort((a, b) => {
-				if (a.task.totalCorrect > b.task.totalCorrect) return -1 // any negative number works
-				if (a.task.totalCorrect < b.task.totalCorrect) return 1 // any positive number works
+				if (a.task.countingCorrect > b.task.countingCorrect) return -1 // any negative number works
+				if (a.task.countingCorrect < b.task.countingCorrect) return 1 // any positive number works
 				return 0 // equal values MUST yield zero
 			})
 		}
@@ -106,8 +106,8 @@
 					{#if game.task.type == 2}
 						<h1 class="text-2xl font-medium"><b class="font-semibold">#{index + 1} </b> {finisher.name}</h1>
 						<p class="text-right">
-							{finisher.task.totalCorrect} correct • {finisher.task.percentage}% • {finisher.task
-								.totalCompleted} completed
+							{finisher.task.countingCorrect} completed • {finisher.task.percentage}% • {finisher.task
+								.totalCorrect} correct
 						</p>
 					{:else}
 						<h1 class="text-2xl font-medium"><b class="font-semibold">#{index + 1} </b> {finisher.name}</h1>
