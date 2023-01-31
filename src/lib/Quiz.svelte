@@ -447,7 +447,7 @@
 
 	let totalCorrect = 0
 	let totalIncorrect = 0
-	let totalCompleted = allArr.length
+	let totalCompleted = 0
 	let percentage
 	let completedBeltsH = []
 	let completedBeltsK = []
@@ -460,6 +460,9 @@
 	let countdownInt = false
 	let viewingResults = false
 	let allowedReload = true
+
+	let ferror = null
+
 	function countdown() {
 		clearInterval(fs)
 		errSeconds = 10
@@ -493,6 +496,10 @@
 		})
 	}
 	function allcompleted() {
+		if (totalCompleted != allArr.length) {
+			ferror = 'Please complete all the questions!'
+			return
+		}
 		finished = true
 		countdownInt = false
 		allowedReload = false
@@ -607,6 +614,7 @@
 		if (activeTask.answerIn == 0) {
 			let ans = ro.split('|')
 			if (ans.includes(input.value)) {
+				totalCompleted += 1
 				input.parentElement.classList.remove('bg-highlight')
 				input.parentElement.classList.add('bg-correct')
 				input.parentElement.style.transform = 'scale(1.00)'
@@ -775,5 +783,8 @@
 			id="fbtn"
 			on:click={allcompleted}>Finish</button
 		>
+		{#if ferror}
+			<p class="text-red-500 text-md">{ferror}</p>
+		{/if}
 	</div>
 {/if}

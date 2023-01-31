@@ -408,7 +408,8 @@
 
 	let totalCorrect = 0
 	let totalIncorrect = 0
-	let totalCompleted = allArr.length
+	let totalCompleted = 0
+	let ferror = null
 	let percentage
 	let completedBeltsH = []
 	let completedBeltsK = []
@@ -451,6 +452,10 @@
 	}
 	let totalTime
 	function allcompleted() {
+		if (totalCompleted != allArr.length) {
+			ferror = 'Please complete all the questions!'
+			return
+		}
 		totalTime = ((Date.now() - startingTime) / 1000).toFixed(2)
 		finished = true
 		countdownInt = false
@@ -511,6 +516,7 @@
 		if (activeTask.answerIn == 0) {
 			let ans = ro.split('|')
 			if (ans.includes(input.value)) {
+				totalCompleted += 1
 				input.parentElement.classList.remove('bg-highlight')
 				input.parentElement.classList.add('bg-correct')
 				input.parentElement.style.transform = 'scale(1.00)'
