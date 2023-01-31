@@ -5,9 +5,11 @@
 	import StartTask from './StartTask.svelte'
 	import Sync from './Sync.svelte'
 	import MobileWarning from './MobileWarning.svelte'
+	import Live from './Live.svelte'
 	export let userData
 	export let streaks
 	let dev = false
+	let liveGame = false
 
 	let activeTask = null
 	let sTask = false
@@ -96,7 +98,9 @@
 
 <MobileWarning />
 
-{#if sTask || activeTask}
+{#if liveGame}
+	<Live bind:userData />
+{:else if sTask || activeTask}
 	<main class="p-10 h-screen overflow-x-hidden">
 		<div class="flex flex-row place-content-between">
 			<h2 class="text-2xl font-semibold text-main">Starterkana</h2>
@@ -139,6 +143,8 @@
 		{:else}
 			<ReccomendTask bind:userData bind:activeTask bind:sTask />
 			<Groups bind:userData />
+			<h2 class="text-2xl font-semibold text-black my-5">Live</h2>
+			<button class="btn-main" on:click={() => (liveGame = true)}>Join or host a live game ↗</button>
 			<div class="flex gap-5">
 				<p
 					class="text-fade text-lg hover:underline hover:cursor-pointer mt-5"
