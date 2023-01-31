@@ -140,7 +140,7 @@
 			<div class="flex items-center text-center p-5">
 				{#if game.users.length > 0}
 					{#each game.users as user}
-						<div class="bg-highlight p-2.5 rounded-md w-10 m-2">
+						<div class="bg-highlight p-2.5 rounded-md min-w-[120px] m-2">
 							<h3 class="text-xl font-medium">{user.name}</h3>
 						</div>
 					{/each}
