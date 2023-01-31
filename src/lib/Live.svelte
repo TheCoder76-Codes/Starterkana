@@ -33,7 +33,7 @@
 {#if joiningGame == 'p'}
 	<Player bind:userData bind:game {socket} />
 {:else if hostingGame == 'p'}
-	<Host bind:userData bind:game {socket} />
+	<Host bind:game {socket} />
 {:else}
 	<div class="flex flex-col justify-between w-screen h-screen overflow-hidden p-10">
 		<div class="flex flex-row justify-between">

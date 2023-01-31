@@ -1,6 +1,5 @@
 <script>
 	import LiveStartTask from './LiveStartTask.svelte'
-	export let userData
 	export let game
 	export let socket
 
