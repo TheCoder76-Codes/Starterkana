@@ -130,9 +130,11 @@
 		</h2>
 	</div> -->
 		<div class="flex items-center flex-col">
-			<div class="bg-gradient-to-bl from-highlight to-main w-screen h-[25vh] grid place-items-center relative">
+			<div
+				class="bg-gradient-to-bl from-highlight to-main w-screen h-[25vh] xl:h-[30vh] grid place-items-center relative"
+			>
 				<div class="w-fit h-fit p-5 bg-white rounded-lg text-center">
-					<h1 class="text-[80px] font-bold">{game.gameId}</h1>
+					<h1 class="text-4xl lg:text-6xl 2xl:text-[80px] font-bold">{game.gameId}</h1>
 					<h2 class="text-lg font-medium">Join at {window.location.href}</h2>
 				</div>
 				<h2 class="font-semibold text-2xl absolute bottom-2.5 left-2.5 text-white">Starterkana.</h2>
