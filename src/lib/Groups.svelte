@@ -49,9 +49,30 @@
 							'Content-Length': String(stringify.length),
 						},
 						body: stringify,
+					}).then((res) => res.json())
+				} else if (me.length > 0 && me[0].points > userData.points) {
+					let index = userData.group.findIndex(
+						(item) => item.points < userData.points && item.uid == userData.uid
+					)
+					userData.group.splice(index, 1)
+				} else {
+					let withoutMe = userData.group.scores.filter((item) => item.uid != userData.uid)
+					withoutMe.push({
+						name: userData.name,
+						points: userData.points,
+						uid: userData.uid,
 					})
-						.then((res) => res.json())
-						.catch((err) => (gidErr = true))
+					userData.group.scores = withoutMe
+
+					let stringify = JSON.stringify(userData.group)
+					fetch(userData.groupID, {
+						method: 'PUT',
+						headers: {
+							'Content-Type': 'application/json',
+							'Content-Length': String(stringify.length),
+						},
+						body: stringify,
+					}).then((res) => res.json())
 				}
 				userData.group.scores.sort((a, b) => {
 					if (a.points > b.points) return -1 // any negative number works
@@ -136,6 +157,29 @@
 				userData = userData
 				let me = userData.group.scores.filter((item) => item.uid == userData.uid)
 				if (me.length > 0 && me[0].points < userData.points) {
+					let withoutMe = userData.group.scores.filter((item) => item.uid != userData.uid)
+					withoutMe.push({
+						name: userData.name,
+						points: userData.points,
+						uid: userData.uid,
+					})
+					userData.group.scores = withoutMe
+
+					let stringify = JSON.stringify(userData.group)
+					fetch(userData.groupID, {
+						method: 'PUT',
+						headers: {
+							'Content-Type': 'application/json',
+							'Content-Length': String(stringify.length),
+						},
+						body: stringify,
+					}).then((res) => res.json())
+				} else if (me.length > 0 && me[0].points > userData.points) {
+					let index = userData.group.findIndex(
+						(item) => item.points < userData.points && item.uid == userData.uid
+					)
+					userData.group.splice(index, 1)
+				} else {
 					let withoutMe = userData.group.scores.filter((item) => item.uid != userData.uid)
 					withoutMe.push({
 						name: userData.name,
