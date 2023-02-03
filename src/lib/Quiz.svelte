@@ -466,9 +466,11 @@
 	function countdown() {
 		clearInterval(fs)
 		errSeconds = 10
+		document.title = '(!!) RELOADING PAGE IN ' + errSeconds
 		fs = setInterval(() => {
 			if (countdownInt) {
 				errSeconds -= 1
+				document.title = '(!!) RELOADING PAGE IN ' + errSeconds
 				if (errSeconds <= 0 && countdownInt) {
 					reloadThePage()
 				}
@@ -492,6 +494,7 @@
 		document.addEventListener('focus', (e) => {
 			e.preventDefault()
 			countdownInt = false
+			document.title = 'Starterkana'
 			testErr = ''
 		})
 	}
