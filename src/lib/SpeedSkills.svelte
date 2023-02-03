@@ -18,7 +18,7 @@
 		}
 		let lastItem = streaks[streaks.length - 1]
 		if (lastItem) {
-			if (!isToday(lastItem)) {
+			if (!isToday(new Date(lastItem))) {
 				streaks.push(new Date())
 			}
 		} else {
