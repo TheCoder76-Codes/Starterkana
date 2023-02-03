@@ -7,47 +7,25 @@
 	import { onMount } from 'svelte'
 	import ViewResults from './ViewResults.svelte'
 
-	function streaksCheck() {
-		if (localStorage.getItem('streaks')) {
-			let ostreaks = JSON.parse(localStorage.getItem('streaks'))
-			if (ostreaks[0]) {
-				if (!ostreaks[0].date) {
-					streaks = ostreaks
-				}
-			} else {
-				if (userData.cookies) {
-					localStorage.setItem('streaks', JSON.stringify([]))
-				}
-				streaks = []
-			}
+	function addStreaks() {
+		const isToday = (someDate) => {
+			const today = new Date()
+			return (
+				someDate.getDate() == today.getDate() &&
+				someDate.getMonth() == today.getMonth() &&
+				someDate.getFullYear() == today.getFullYear()
+			)
 		}
 		let lastItem = streaks[streaks.length - 1]
 		if (lastItem) {
-			let ldate = new Date(lastItem) // last date
-			let cdate = new Date()
-			let ydate = new Date() // yesterdays date
-			cdate.setHours(0, 0, 0, 0)
-			ldate.setHours(0, 0, 0, 0)
-			ydate.setDate(cdate.getDate() - 1)
-			ydate.setHours(0, 0, 0, 0)
-			if (ldate.toDateString() == ydate.toDateString()) {
-				// was yesterday
-				streaks.push(cdate)
-			} else if (ldate.toDateString() == cdate.toDateString()) {
-				// was today
-				// nothing
-			} else {
-				// lost streaks
-				streaks = []
+			if (!isToday(lastItem)) {
+				streaks.push(new Date())
 			}
 		} else {
-			// array is empty
 			streaks.push(new Date())
 		}
-		if (userData.cookies) {
-			localStorage.setItem('streaks', JSON.stringify(streaks))
-		}
 	}
+
 	let hiragana = {
 		a: [
 			['あ', 'a'],
@@ -507,7 +485,7 @@
 		countdownInt = false
 		allowedReload = false
 		clearInterval(fs)
-		streaksCheck()
+		addStreaks()
 		if (activeTask.type == 3) {
 			document.removeEventListener('blur', (e) => {
 				e.preventDefault()

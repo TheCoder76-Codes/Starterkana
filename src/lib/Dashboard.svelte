@@ -14,6 +14,14 @@
 	let activeTask = null
 	let sTask = false
 	let openPage = () => {}
+	function countStreaks() {
+		let count = 0
+		let arr = streaks
+		arr.reverse().forEach((el, i) => {
+			if (new Date().setUTCHours(0, 0, 0, 0) - new Date(el).setUTCHours(0, 0, 0, 0) === i * 86400000) count++
+		})
+		return count
+	}
 
 	let vNumber = ''
 	fetch('https://api.github.com/repos/TheCoder76-Codes/Starterkana/releases/latest')
@@ -115,7 +123,7 @@
 				>
 			{/if}
 			<h2 class="text-2xl font-semibold text-black">
-				{userData.points} Points • {streaks.length} Day Streak • {userData.name}
+				{userData.points} Points • {countStreaks()} Day Streak • {userData.name}
 			</h2>
 		</div>
 		<StartTask bind:activeTask bind:userData bind:sTask bind:streaks />
@@ -135,7 +143,7 @@
 				>
 			{/if}
 			<h2 class="text-2xl font-semibold text-black">
-				{userData.points} Points • {streaks.length} Day Streak • {userData.name}
+				{userData.points} Points • {countStreaks()} Day Streak • {userData.name}
 			</h2>
 		</div>
 		{#if setupSyncPage}
