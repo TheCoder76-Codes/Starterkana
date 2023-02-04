@@ -208,6 +208,14 @@
 				}
 			})
 	}
+
+	if (userData.group && userData.group.scores) {
+		userData.group.scores.sort((a, b) => {
+			if (a.points > b.points) return -1 // any negative number works
+			if (a.points < b.points) return 1 // any positive number works
+			return 0 // equal values MUST yield zero
+		})
+	}
 </script>
 
 <h2 class="text-2xl font-semibold text-black my-5">Groups</h2>
