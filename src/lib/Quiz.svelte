@@ -462,19 +462,31 @@
 	}
 
 	if (activeTask.type == 3 && !finished) {
-		document.addEventListener('blur', (e) => {
+		window.addEventListener('blur', (e) => {
 			e.preventDefault()
 			testErr = 'You need to focus on this window to complete this test.'
 			countdown()
 			countdownInt = true
 		})
 
-		document.addEventListener('focus', (e) => {
+		window.addEventListener('focus', (e) => {
 			e.preventDefault()
 			countdownInt = false
 			document.title = 'Starterkana'
 			testErr = ''
 		})
+		document.body.onfocus = (e) => {
+			e.preventDefault()
+			countdownInt = false
+			document.title = 'Starterkana'
+			testErr = ''
+		}
+		document.body.onblur = (e) => {
+			e.preventDefault()
+			testErr = 'You need to focus on this window to complete this test.'
+			countdown()
+			countdownInt = true
+		}
 	}
 	function allcompleted() {
 		if (totalCompleted != allArr.length) {
@@ -487,12 +499,13 @@
 		clearInterval(fs)
 		addStreaks()
 		if (activeTask.type == 3) {
-			document.removeEventListener('blur', (e) => {
+			window.removeEventListener('blur', (e) => {
 				e.preventDefault()
 				testErr = 'You need to focus on this window to complete this test.'
 				countdown()
 				countdownInt = true
 			})
+			document.body.onblur = () => {}
 			countdownInt = false
 			clearInterval(fs)
 		}
