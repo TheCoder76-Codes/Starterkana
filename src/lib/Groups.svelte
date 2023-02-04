@@ -210,6 +210,11 @@
 	}
 
 	if (userData.group && userData.group.scores) {
+		userData.group.scores.forEach((item, index) => {
+			if (typeof item.points == 'string') {
+				userData.group.scores[index].points = parseInt(item.points)
+			}
+		})
 		userData.group.scores.sort((a, b) => {
 			if (a.points > b.points) return -1 // any negative number works
 			if (a.points < b.points) return 1 // any positive number works
