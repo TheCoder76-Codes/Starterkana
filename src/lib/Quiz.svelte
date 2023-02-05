@@ -462,13 +462,6 @@
 	}
 
 	if (activeTask.type == 3 && !finished) {
-		window.addEventListener('blur', (e) => {
-			e.preventDefault()
-			testErr = 'You need to focus on this window to complete this test.'
-			countdown()
-			countdownInt = true
-		})
-
 		window.addEventListener('focus', (e) => {
 			e.preventDefault()
 			countdownInt = false
@@ -499,12 +492,6 @@
 		clearInterval(fs)
 		addStreaks()
 		if (activeTask.type == 3) {
-			window.removeEventListener('blur', (e) => {
-				e.preventDefault()
-				testErr = 'You need to focus on this window to complete this test.'
-				countdown()
-				countdownInt = true
-			})
 			document.body.onblur = () => {}
 			countdownInt = false
 			clearInterval(fs)
@@ -716,17 +703,18 @@
 		bind:percentage
 		bind:sTask
 	/>
-{:else if testErr.length > 0}
-	<div class="w-screen h-screen overflow-hidden bg-incorrect fixed top-0 left-0 grid place-items-center">
-		<div class="bg-white/50 p-5 rounded-lg text-center max-w-sm">
-			<h1 class="text-4xl text-white font-semibold">Test Error</h1>
-			<p class="text-white font-medium 2xl my-2 mb-5">{testErr}</p>
-			<p class="text-white font-medium 2xl">
-				If you do not fix this error in the next {errSeconds} seconds, this page will reload.
-			</p>
-		</div>
-	</div>
 {:else}
+	{#if testErr.length > 0}
+		<div class="w-screen h-screen overflow-hidden bg-incorrect fixed top-0 left-0 grid place-items-center z-50">
+			<div class="bg-white/50 p-5 rounded-lg text-center max-w-sm">
+				<h1 class="text-4xl text-white font-semibold">Test Error</h1>
+				<p class="text-white font-medium 2xl my-2 mb-5">{testErr}</p>
+				<p class="text-white font-medium 2xl">
+					If you do not fix this error in the next {errSeconds} seconds, this page will reload.
+				</p>
+			</div>
+		</div>
+	{/if}
 	<div class="block md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6">
 		{#each allArr as [jp, ro]}
 			<form
