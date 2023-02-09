@@ -7,25 +7,6 @@
 	import { onMount } from 'svelte'
 	import ViewResults from './ViewResults.svelte'
 
-	function addStreaks() {
-		const isToday = (someDate) => {
-			const today = new Date()
-			return (
-				someDate.getDate() == today.getDate() &&
-				someDate.getMonth() == today.getMonth() &&
-				someDate.getFullYear() == today.getFullYear()
-			)
-		}
-		let lastItem = streaks[streaks.length - 1]
-		if (lastItem) {
-			if (!isToday(new Date(lastItem))) {
-				streaks.push(new Date())
-			}
-		} else {
-			streaks.push(new Date())
-		}
-	}
-
 	let hiragana = {
 		a: [
 			['あ', 'a'],
@@ -429,7 +410,6 @@
 	let viewingResults = false
 	function allcompleted() {
 		finished = true
-		addStreaks()
 		belts.forEach((item) => {
 			if (arrayContainsAll(beltsContain[item], activeTask.hiragana)) {
 				completedBeltsH.push(item)
