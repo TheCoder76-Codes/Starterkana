@@ -1,5 +1,5 @@
 <script>
-	import Setup from './Setup.svelte'
+	import Setup from '../Setup/Setup.svelte'
 
 	export let userData
 	export let migrate

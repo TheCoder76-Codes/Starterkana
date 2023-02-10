@@ -1,9 +1,9 @@
 <script>
-	import Setup from './lib/Setup.svelte'
-	import Dash from './lib/Dashboard.svelte'
-	import ErrorPopup from './lib/ErrorPopup.svelte'
-	import Actor from './lib/Actor.svelte'
-	import Migrate from './lib/Migrate.svelte'
+	import Setup from './lib/Setup/Setup.svelte'
+	import Dash from './lib/Dashboard/Dashboard.svelte'
+	import ErrorPopup from './lib/Dashboard/ErrorPopup.svelte'
+	import Actor from './lib/Actor/Actor.svelte'
+	import Migrate from './lib/Dashboard/Migrate.svelte'
 	let setup = false
 	let belts = ['white', 'yellow', 'orange', 'green', 'blue', 'purple', 'red', 'brown', 'black']
 	let userData = {}

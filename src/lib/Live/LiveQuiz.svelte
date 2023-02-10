@@ -332,6 +332,27 @@
 			['ヂョ', 'dyo'],
 		],
 	}
+	function arraysIdentical(arr1, arr2) {
+		var i = arr1.length
+		if (i !== arr2.length) {
+			return false
+		}
+		while (i--) {
+			if (arr1[i] !== arr2[i]) {
+				return false
+			}
+		}
+		return true
+	}
+
+	function indexOf(arr, val, comparer) {
+		for (var i = 0, len = arr.length; i < len; ++i) {
+			if (i in arr && comparer(arr[i], val)) {
+				return i
+			}
+		}
+		return -1
+	}
 	let finished
 
 	let belts = ['white', 'yellow', 'orange', 'green', 'blue', 'purple', 'red', 'brown', 'black']
@@ -349,6 +370,8 @@
 	let taskHLine = []
 	let taskKLine = []
 
+	let startingTime
+
 	activeTask.hiragana.forEach((item) => {
 		taskHLine = taskHLine.concat(hiragana[item])
 	})
@@ -361,25 +384,16 @@
 	let allArr = taskHLine.concat(taskKLine)
 	allArr.sort(() => Math.random() - 0.5)
 	onMount(() => {
-		input.focus()
 		if (activeTask.answerIn == 1) {
-			if (wanakana.isHiragana(allArr[index][0])) {
-				wanakana.bind(input, { IMEMode: 'toHiragana' })
-			} else {
-				wanakana.bind(input, { IMEMode: 'toKatakana' })
-			}
+			allArr.forEach(([jp, ro]) => {
+				if (wanakana.isHiragana(jp)) {
+					wanakana.bind(document.getElementById(jp), { IMEMode: 'toHiragana' })
+				} else {
+					wanakana.bind(document.getElementById(jp), { IMEMode: 'toKatakana' })
+				}
+			})
 		}
-		let width = 0
-
-		let inte = setInterval(() => {
-			width++
-			progressBar.style.width = width + '%'
-			if (width >= 100) {
-				clearInterval(inte)
-				allcompleted()
-				return
-			}
-		}, 600)
+		startingTime = Date.now()
 	})
 
 	function arrayContainsAll(needle, haystack) {
@@ -391,23 +405,72 @@
 
 		return true
 	}
-	let index = 0
 
 	let totalCorrect = 0
 	let totalIncorrect = 0
-	let countingCorrect = 0
-	let totalCompleted = allArr.length
+	let totalCompleted = 0
+	let ferror = null
 	let percentage
 	let completedBeltsH = []
 	let completedBeltsK = []
-	let progressBar
-	let input
-	let nudge = `<p class="text-fade">Hint: Press 'Enter' once your done typing</p>`
+	let testErr = ''
+	let errSeconds = 10
+	let fs
+	let countdownInt = false
+	let allowedReload = true
+	function countdown() {
+		clearInterval(fs)
+		errSeconds = 10
+		fs = setInterval(() => {
+			if (countdownInt) {
+				errSeconds -= 1
+				if (errSeconds <= 0 && countdownInt) {
+					reloadThePage()
+				}
+			}
+		}, 1000)
+	}
+	function reloadThePage() {
+		if (allowedReload) {
+			window.location.reload()
+		}
+	}
 
+	if (activeTask.type == 3 && !finished) {
+		document.addEventListener('blur', (e) => {
+			e.preventDefault()
+			testErr = 'You need to focus on this window to complete this test.'
+			countdown()
+			countdownInt = true
+		})
+
+		document.addEventListener('focus', (e) => {
+			e.preventDefault()
+			countdownInt = false
+			testErr = ''
+		})
+	}
 	let totalTime
-
 	function allcompleted() {
+		if (totalCompleted != allArr.length) {
+			ferror = 'Please complete all the questions!'
+			return
+		}
+		totalTime = ((Date.now() - startingTime) / 1000).toFixed(2)
 		finished = true
+		countdownInt = false
+		allowedReload = false
+		clearInterval(fs)
+		if (activeTask.type == 3) {
+			document.removeEventListener('blur', (e) => {
+				e.preventDefault()
+				testErr = 'You need to focus on this window to complete this test.'
+				countdown()
+				countdownInt = true
+			})
+			countdownInt = false
+			clearInterval(fs)
+		}
 		belts.forEach((item) => {
 			if (arrayContainsAll(beltsContain[item], activeTask.hiragana)) {
 				completedBeltsH.push(item)
@@ -430,44 +493,48 @@
 			userData.points = parseInt(userData.points)
 		}
 
-		userData.points += parseInt((countingCorrect / 2).toFixed(0))
+		userData.points += totalCorrect
 		if (completedBeltsK.length > 4 || completedBeltsH.length > 4) userData.points += 10
 		if (completedBeltsK.length > 6 || completedBeltsH.length > 6) userData.points += 10
 		if (completedBeltsK.length > 8 || completedBeltsH.length > 8) userData.points += 10
 		if (userData.cookies) {
 			localStorage.setItem('userData', JSON.stringify(userData))
 		}
+
 		activeTask.totalIncorrect = totalIncorrect
 		activeTask.totalCompleted = totalCompleted
 		activeTask.totalCorrect = totalCorrect
 		activeTask.percentage = percentage
-		activeTask.countingCorrect = countingCorrect
 		activeTask.time = totalTime
 
 		socket.emit('playerCompletedTask', activeTask, game, userData, (res) => (game = res))
 	}
-	function handleSubmit() {
-		let [jp, ro] = allArr[index]
-		if (input.value.length <= 0) {
-			nudge = `<p class="text-incorrect">Please put in a response!</p>`
-			return
-		}
+
+	function handleSubmit(jp, ro) {
+		let input = document.getElementById(jp)
+		if (input.value.length <= 0) return
 		if (activeTask.answerIn == 0) {
 			let ans = ro.split('|')
 			if (ans.includes(input.value)) {
-				if (index + 1 == allArr.length) {
-					index = -1
-					allArr.sort(() => Math.random() - 0.5)
+				totalCompleted += 1
+				input.parentElement.classList.remove('bg-highlight')
+				input.parentElement.classList.add('bg-correct')
+				input.parentElement.style.transform = 'scale(1.00)'
+				input.disabled = true
+				let index = indexOf(allArr, [jp, ro], arraysIdentical)
+				if (index > -1 && index + 1 != allArr.length) {
+					document.getElementById(allArr[index + 1][0]).focus()
+				} else {
+					document.getElementById('fbtn').focus()
 				}
-				index++
-				countingCorrect++
-				input.value = ''
-				input.focus()
-				nudge = `<p class="text-fade">Hint: Press 'Enter' once your done typing</p>`
 			} else {
+				input.parentElement.classList.remove('bg-highlight')
+				input.parentElement.classList.add('bg-incorrect')
+				input.placeholder = input.value
+				input.value = ''
 				if (activeTask.incorrect) {
 					if (activeTask.incorrect[jp + '|' + ro]) {
-						activeTask.incorrect[jp + '|' + ro]++
+						// activeTask.incorrect[jp + '|' + ro]++ // Removed due to negative percentages
 					} else {
 						activeTask.incorrect[jp + '|' + ro] = 1
 					}
@@ -475,58 +542,33 @@
 					activeTask.incorrect = {}
 					activeTask.incorrect[jp + '|' + ro] = 1
 				}
-				if (index + 1 == allArr.length) {
-					index = -1
-					allArr.sort(() => Math.random() - 0.5)
-				}
-				index++
-				input.value = ''
-				input.focus()
-				nudge = `<p class="text-fade">Hint: Press 'Enter' once your done typing</p>`
 			}
 		} else {
 			if (input.value == jp) {
-				if (index + 1 == allArr.length) {
-					index = -1
-					allArr.sort(() => Math.random() - 0.5)
-				}
-				index++
-				countingCorrect++
-				input.value = ''
-				input.focus()
-				nudge = `<p class="text-fade">Hint: Press 'Enter' once your done typing</p>`
-				if (activeTask.answerIn == 1) {
-					if (wanakana.isHiragana(allArr[index][0])) {
-						wanakana.bind(input, { IMEMode: 'toHiragana' })
-					} else {
-						wanakana.bind(input, { IMEMode: 'toKatakana' })
-					}
+				input.parentElement.classList.remove('bg-highlight')
+				input.parentElement.classList.add('bg-correct')
+				input.parentElement.style.transform = 'scale(1.00)'
+				input.disabled = true
+				let index = indexOf(allArr, [jp, ro], arraysIdentical)
+				if (index > -1 && index + 1 != allArr.length) {
+					document.getElementById(allArr[index + 1][0]).focus()
+				} else {
+					document.getElementById('fbtn').focus()
 				}
 			} else {
+				input.parentElement.classList.remove('bg-highlight')
+				input.parentElement.classList.add('bg-incorrect')
+				input.placeholder = input.value
+				input.value = ''
 				if (activeTask.incorrect) {
 					if (activeTask.incorrect[jp + '|' + ro]) {
-						activeTask.incorrect[jp + '|' + ro]++
+						// activeTask.incorrect[jp + '|' + ro]++ // Removed due to negative percentages
 					} else {
 						activeTask.incorrect[jp + '|' + ro] = 1
 					}
 				} else {
 					activeTask.incorrect = {}
 					activeTask.incorrect[jp + '|' + ro] = 1
-				}
-				if (index + 1 == allArr.length) {
-					index = -1
-					allArr.sort(() => Math.random() - 0.5)
-				}
-				index++
-				input.value = ''
-				input.focus()
-				nudge = `<p class="text-fade">Hint: Press 'Enter' once your done typing</p>`
-				if (activeTask.answerIn == 1) {
-					if (wanakana.isHiragana(allArr[index][0])) {
-						wanakana.bind(input, { IMEMode: 'toHiragana' })
-					} else {
-						wanakana.bind(input, { IMEMode: 'toKatakana' })
-					}
 				}
 			}
 		}
@@ -540,39 +582,73 @@
 		<div class="text-center">
 			<h1 class="font-semibold text-5xl text-white mb-2">Finished!</h1>
 			<h3 class="font-medium text-2xl text-white">
-				You managed to get {activeTask.totalCorrect} correct answers in 60 seconds, with {activeTask.percentage}%
-				accuracy.
+				You completed all {activeTask.totalCompleted} questions in {totalTime} seconds!
 			</h3>
 			<p class="text-white text-md">Wait for the host to start another game.</p>
 		</div>
 
 		<h2 class="font-semibold text-2xl absolute bottom-2.5 left-2.5 text-white">Starterkana.</h2>
 	</div>
-{:else}
-	<div class="grid md:p-20 place-content-center w-full h-full overflow-hidden">
-		<div class="text-center">
-			<h1 class="text-6xl font-semibold mb-10 md:mb-24 lg:mb-64 xl:mb-80 font-jp">
-				{allArr[index][0]}
-			</h1>
-			<form on:submit|preventDefault={handleSubmit} class="mt-10 md:mt-24 lg:mt-64 xl:mt-80">
-				{@html nudge}
-				<input
-					type="text"
-					bind:this={input}
-					class="m-2 text-lg border rounded-lg border-gray-300 hover:border-gray-400 focus:border-gray-500 outline-none p-2 disabled:hover:cursor-not-allowed"
-					placeholder="Type in your answer here"
-					id={allArr[index][0]}
-					autocomplete="off"
-					autocorrect="off"
-					autocapitalize="off"
-					spellcheck="false"
-				/>
-			</form>
+{:else if testErr.length > 0}
+	<div class="w-screen h-screen overflow-hidden bg-incorrect fixed top-0 left-0 grid place-items-center">
+		<div class="bg-white/50 p-5 rounded-lg text-center max-w-sm">
+			<h1 class="text-4xl text-white font-semibold">Test Error</h1>
+			<p class="text-white font-medium 2xl my-2 mb-5">{testErr}</p>
+			<p class="text-white font-medium 2xl">
+				If you do not fix this error in the next {errSeconds} seconds, this page will reload.
+			</p>
 		</div>
 	</div>
-	<div class="fixed bottom-0 left-0 w-[calc(100vw-80px)] m-10">
-		<div class="w-full h-5 rounded-full bg-highlight">
-			<div class="bg-main h-5 rounded-full w-0" bind:this={progressBar} />
-		</div>
+{:else}
+	<div class="block md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6">
+		{#each allArr as [jp, ro]}
+			<form
+				class="bg-highlight p-5 rounded-lg m-2 text-center transition-transform ease-in-out duration-300 focus:scale-105"
+				on:submit|preventDefault={() => handleSubmit(jp, ro)}
+			>
+				{#if activeTask.answerIn == 0}
+					<h1 class="text-6xl text-white font-jp">{jp}</h1>
+					<input
+						type="text"
+						placeholder="Answer"
+						class="text-lg rounded-lg outline-none p-2 mt-5 w-full hover:disabled:cursor-not-allowed"
+						autocomplete="off"
+						autocorrect="off"
+						autocapitalize="off"
+						spellcheck="false"
+						id={jp}
+						on:focus={() => {
+							document.getElementById(jp).parentElement.style.transform = 'scale(1.05)'
+						}}
+						on:blur={() => {
+							document.getElementById(jp).parentElement.style.transform = 'scale(1.00)'
+						}}
+					/>
+				{:else if activeTask.answerIn == 1}
+					<h1 class="text-6xl text-white">{ro.split('|')[0]}</h1>
+					<input
+						type="text"
+						placeholder="Answer"
+						class="text-lg rounded-lg outline-none p-2 mt-5 w-full hover:disabled:cursor-not-allowed"
+						autocomplete="off"
+						autocorrect="off"
+						autocapitalize="off"
+						spellcheck="false"
+						id={jp}
+						on:focus={() => {
+							document.getElementById(jp).parentElement.style.transform = 'scale(1.05)'
+						}}
+						on:blur={() => {
+							document.getElementById(jp).parentElement.style.transform = 'scale(1.00)'
+						}}
+					/>
+				{/if}
+			</form>
+		{/each}
+		<button
+			class="bg-highlight p-5 rounded-lg m-2 text-center text-white text-4xl font-semibold transition-transform ease-in-out duration-300 focus:scale-105 hover:scale-105 outline-none"
+			id="fbtn"
+			on:click={allcompleted}>Finish</button
+		>
 	</div>
 {/if}

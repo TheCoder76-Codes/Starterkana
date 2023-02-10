@@ -1,11 +1,10 @@
 <script>
-	import About from './About.svelte'
 	import Groups from './Groups.svelte'
 	import ReccomendTask from './ReccomendTask.svelte'
 	import StartTask from './StartTask.svelte'
 	import Sync from './Sync.svelte'
 	import MobileWarning from './MobileWarning.svelte'
-	import Live from './Live.svelte'
+	import Live from '../Live/Live.svelte'
 	export let userData
 	export let streaks
 	let dev = false

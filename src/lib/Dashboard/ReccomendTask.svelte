@@ -106,7 +106,7 @@
 			newTask.hiragana = newTask.hiragana.concat(beltsContain[item])
 		})
 		newTask.title = 'All Completed Belts (Hiragana & Katakana)'
-		newTask.answerIn = randint(0, 1)
+		// newTask.answerIn = randint(0, 1)
 
 		reccomendedtasks.push(newTask)
 	} else if (currentKBelt[0] == 'white' && currentHBelt[0] != 'white') {
@@ -130,7 +130,7 @@
 			newTask2.hiragana = newTask2.hiragana.concat(beltsContain[item])
 		})
 		newTask2.title = 'All Completed Hiragana Belts'
-		newTask2.answerIn = randint(0, 1)
+		// newTask2.answerIn = randint(0, 1)
 		reccomendedtasks.push(newTask2)
 	} else if (currentKBelt[0] != 'white' && currentHBelt[0] == 'white') {
 		reccomendedtasks.push({
@@ -219,7 +219,7 @@
 			newTask.hiragana = newTask.hiragana.concat(beltsContain[item])
 		})
 		newTask.title = 'All Completed Belts (Hiragana & Katakana)'
-		newTask.answerIn = randint(0, 1)
+		// newTask.answerIn = randint(0, 1)
 
 		reccomendedtasks.push(newTask)
 	} else if (currentKBelt[0] == 'white' && currentHBelt[0] != 'white' && reccomendedtasks.length < 4) {
@@ -234,7 +234,7 @@
 			newTask2.hiragana = newTask2.hiragana.concat(beltsContain[item])
 		})
 		newTask2.title = 'All Completed Hiragana Belts'
-		newTask2.answerIn = randint(0, 1)
+		// newTask2.answerIn = randint(0, 1)
 		reccomendedtasks.push(newTask2)
 	} else if (currentKBelt[0] != 'white' && currentHBelt[0] == 'white' && reccomendedtasks.length < 4) {
 		let newTask2 = {
@@ -262,7 +262,7 @@
 			newTask2.hiragana = newTask2.hiragana.concat(beltsContain[item])
 		})
 		newTask2.title = 'All Completed Hiragana Belts'
-		newTask2.answerIn = randint(0, 1)
+		// newTask2.answerIn = randint(0, 1)
 		reccomendedtasks.push(newTask2)
 	}
 	if (currentKBelt[0] != 'white' && reccomendedtasks.length < 4) {
@@ -277,7 +277,7 @@
 			newTask2.katakana = newTask2.katakana.concat(beltsContain[item])
 		})
 		newTask2.title = 'All Completed Katakana Belts'
-		newTask2.answerIn = randint(0, 1)
+		// newTask2.answerIn = randint(0, 1)
 		reccomendedtasks.push(newTask2)
 	}
 	reccomendedtasks.sort(() => Math.random() - 0.5)

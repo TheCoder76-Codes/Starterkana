@@ -1,7 +1,7 @@
 <script>
-	import Quiz from './Quiz.svelte'
-	import Learn from './Learn.svelte'
-	import SpeedSkills from './SpeedSkills.svelte'
+	import Quiz from '../Task/Quiz.svelte'
+	import Learn from '../Task/Learn.svelte'
+	import SpeedSkills from '../Task/SpeedSkills.svelte'
 	export let activeTask
 	export let userData
 	export let sTask

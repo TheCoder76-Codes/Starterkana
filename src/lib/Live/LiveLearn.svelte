@@ -468,7 +468,7 @@
 				input.focus()
 				if (activeTask.incorrect) {
 					if (activeTask.incorrect[jp + '|' + ro]) {
-						activeTask.incorrect[jp + '|' + ro]++
+						// activeTask.incorrect[jp + '|' + ro]++ // Removed due to negative percentages
 					} else {
 						activeTask.incorrect[jp + '|' + ro] = 1
 					}
@@ -503,7 +503,7 @@
 				input.focus()
 				if (activeTask.incorrect) {
 					if (activeTask.incorrect[jp + '|' + ro]) {
-						activeTask.incorrect[jp + '|' + ro]++
+						// activeTask.incorrect[jp + '|' + ro]++ // Removed due to negative percentages
 					} else {
 						activeTask.incorrect[jp + '|' + ro] = 1
 					}
