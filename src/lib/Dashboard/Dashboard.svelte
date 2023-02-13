@@ -32,10 +32,32 @@
 		setupSyncPage = true
 	}
 
+	async function fetchWithTimeout(resource, options = {}) {
+		const { timeout = 8000 } = options
+
+		const controller = new AbortController()
+		const id = setTimeout(() => controller.abort(), timeout)
+		const response = await fetch(resource, {
+			...options,
+			signal: controller.signal,
+		})
+		clearTimeout(id)
+		return response
+	}
+
 	// quiz and speed skills of previous belts
 	// quiz and learn and speed skills of current belt
 	// learn of next belt (except black)
 	// test of current belt ()
+
+	// check sk live status
+	// https://starterkana-live.onrender.com/status
+	let offline = 0 // 0 = check, 1 online 2 offline
+	let x = new XMLHttpRequest()
+
+	fetchWithTimeout('https://starterkana-live.onrender.com/status', { timeout: 8000 })
+		.then(() => (offline = 1))
+		.catch(() => (offline = 2))
 </script>
 
 <MobileWarning />
@@ -86,7 +108,14 @@
 			<ReccomendTask bind:userData bind:activeTask bind:sTask />
 			<Groups bind:userData />
 			<h2 class="text-2xl font-semibold text-black my-5">Live</h2>
-			<button class="btn-main" on:click={() => (liveGame = true)}>Join or host a live game ↗</button>
+			{#if offline == 0}
+				<p class="m-2 text-base">Please wait, checking status...</p>
+			{:else if offline == 1}
+				<button class="btn-main" on:click={() => (liveGame = true)}>Join or host a live game ↗</button>
+			{:else}
+				<p class="m-2 text-red-500 text-base">The server is offline. Please contact the administrator.</p>
+			{/if}
+
 			<div class="flex gap-5">
 				<p
 					class="text-fade text-lg hover:underline hover:cursor-pointer mt-5"
