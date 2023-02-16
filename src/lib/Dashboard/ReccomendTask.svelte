@@ -106,7 +106,7 @@
 			newTask.hiragana = newTask.hiragana.concat(beltsContain[item])
 		})
 		newTask.title = 'All Completed Belts (Hiragana & Katakana)'
-		// newTask.answerIn = randint(0, 1)
+		newTask.answerIn = randint(0, 1)
 
 		reccomendedtasks.push(newTask)
 	} else if (currentKBelt[0] == 'white' && currentHBelt[0] != 'white') {
@@ -219,7 +219,7 @@
 			newTask.hiragana = newTask.hiragana.concat(beltsContain[item])
 		})
 		newTask.title = 'All Completed Belts (Hiragana & Katakana)'
-		// newTask.answerIn = randint(0, 1)
+		newTask.answerIn = randint(0, 1)
 
 		reccomendedtasks.push(newTask)
 	} else if (currentKBelt[0] == 'white' && currentHBelt[0] != 'white' && reccomendedtasks.length < 4) {
