@@ -3,6 +3,8 @@
 	export let userData
 	export let sTask
 	export let streaks
+	import './kanji-canvas'
+	import './ref-patterns'
 	import * as wanakana from 'wanakana'
 	import { onMount } from 'svelte'
 	import ViewResults from './ViewResults.svelte'
@@ -362,13 +364,10 @@
 	let allArr = taskHLine.concat(taskKLine)
 	allArr.sort(() => Math.random() - 0.5)
 	onMount(() => {
-		input.focus()
 		if (activeTask.answerIn == 1) {
-			if (wanakana.isHiragana(allArr[index][0])) {
-				wanakana.bind(input, { IMEMode: 'toHiragana' })
-			} else {
-				wanakana.bind(input, { IMEMode: 'toKatakana' })
-			}
+			KanjiCanvas.init('can')
+		} else {
+			input.focus()
 		}
 		let width = 0
 
@@ -382,6 +381,15 @@
 			}
 		}, 600)
 	})
+	let charactersArr = []
+	let inTimeout = false
+	function kcan() {
+		if (!inTimeout) {
+			let characters = KanjiCanvas.recognize('can')
+			characters = characters.split(' ').filter((i) => i != '')
+			charactersArr = characters
+		}
+	}
 
 	function arrayContainsAll(needle, haystack) {
 		for (let i = 0; i < needle.length; i++) {
@@ -408,6 +416,8 @@
 	let input
 	let nudge = `<p class="text-fade">Hint: Press 'Enter' once your done typing</p>`
 	let viewingResults = false
+	let jpIndex = 0
+	let hgOrKk = ''
 	function allcompleted() {
 		finished = true
 		belts.forEach((item) => {
@@ -476,9 +486,18 @@
 			activeTask
 		)
 	}
-	function handleSubmit() {
+
+	if (activeTask.answerIn == 1) {
+		nudge = `<p class="text-fade">Hint: Click on a character once your done writing.</p>`
+		if (wanakana.isHiragana(allArr[jpIndex][0])) {
+			hgOrKk = 'Hiragana'
+		} else {
+			hgOrKk = 'Katakana'
+		}
+	}
+	function handleSubmit(jpI = null) {
 		let [jp, ro] = allArr[index]
-		if (input.value.length <= 0) {
+		if (!jpI && input.value.length <= 0) {
 			nudge = `<p class="text-incorrect">Please put in a response!</p>`
 			return
 		}
@@ -515,24 +534,31 @@
 				nudge = `<p class="text-fade">Hint: Press 'Enter' once your done typing</p>`
 			}
 		} else {
-			if (input.value == jp) {
+			let item = allArr[jpIndex] // ['あ', 'a']
+			if (jpI == item[0]) {
+				// correct
+				// reset canvas, recognized characters and add to jpIndex
+				nudge = `<p class="text-correct">Correct! Well done!</p>`
 				if (index + 1 == allArr.length) {
 					index = -1
+					jpIndex = -1
 					allArr.sort(() => Math.random() - 0.5)
 				}
 				index++
 				countingCorrect++
-				input.value = ''
-				input.focus()
-				nudge = `<p class="text-fade">Hint: Press 'Enter' once your done typing</p>`
-				if (activeTask.answerIn == 1) {
-					if (wanakana.isHiragana(allArr[index][0])) {
-						wanakana.bind(input, { IMEMode: 'toHiragana' })
-					} else {
-						wanakana.bind(input, { IMEMode: 'toKatakana' })
-					}
+				KanjiCanvas.erase('can')
+				charactersArr = []
+				jpIndex++
+				if (wanakana.isHiragana(allArr[jpIndex][0])) {
+					hgOrKk = 'Hiragana'
+				} else {
+					hgOrKk = 'Katakana'
 				}
 			} else {
+				// incorrect
+				nudge = `<p class="text-incorrect">Incorrect! Try again!</p>`
+				KanjiCanvas.erase('can')
+				charactersArr = []
 				if (activeTask.incorrect) {
 					if (activeTask.incorrect[jp + '|' + ro]) {
 						activeTask.incorrect[jp + '|' + ro]++
@@ -542,21 +568,6 @@
 				} else {
 					activeTask.incorrect = {}
 					activeTask.incorrect[jp + '|' + ro] = 1
-				}
-				if (index + 1 == allArr.length) {
-					index = -1
-					allArr.sort(() => Math.random() - 0.5)
-				}
-				index++
-				input.value = ''
-				input.focus()
-				nudge = `<p class="text-fade">Hint: Press 'Enter' once your done typing</p>`
-				if (activeTask.answerIn == 1) {
-					if (wanakana.isHiragana(allArr[index][0])) {
-						wanakana.bind(input, { IMEMode: 'toHiragana' })
-					} else {
-						wanakana.bind(input, { IMEMode: 'toKatakana' })
-					}
 				}
 			}
 		}
@@ -613,7 +624,7 @@
 		bind:sTask
 		bind:countingCorrect
 	/>
-{:else}
+{:else if activeTask.answerIn == 0}
 	<div class="grid md:p-20 place-content-center w-full h-full overflow-hidden">
 		<div class="text-center">
 			<h1 class="text-6xl font-semibold mb-10 md:mb-24 lg:mb-64 xl:mb-80 font-jp">
@@ -638,6 +649,52 @@
 	<div class="fixed bottom-0 left-0 w-[calc(100vw-80px)] m-10">
 		<div class="w-full h-5 rounded-full bg-highlight">
 			<div class="bg-main h-5 rounded-full w-0" bind:this={progressBar} />
+		</div>
+	</div>
+{:else}
+	<div class="h-[calc(40vh)] w-full text-center mt-10 md:mt-20 flex flex-col place-content-between">
+		<div>
+			<h1 class="text-6xl font-semibold">
+				{allArr[index][1].split('|')[0]}
+			</h1>
+		</div>
+
+		<div>
+			<div class="mb-5">
+				{@html nudge}
+			</div>
+			<div class="w-full h-5 rounded-full bg-highlight">
+				<div class="bg-main h-5 rounded-full w-0" bind:this={progressBar} />
+			</div>
+		</div>
+	</div>
+	<div class="w-screen h-[40vh] fixed bottom-0 left-0 p-5 lg:px-16 bg-highlight lg:flex lg:flex-row overflow-y-auto">
+		<div>
+			<h1 class="font-semibold text-xl m-2.5 text-left">Drawing Canvas</h1>
+			<p class="text-base mx-2.5">{hgOrKk}</p>
+			<div class="flex flex-row">
+				<canvas width="256px" height="256px" id="can" on:click={kcan} class="bg-white rounded-lg m-2.5" />
+				<div>
+					<button
+						class="text-black p-2.5 rounded-lg m-2 transition-transform ease-in-out duration-300 hover:scale-105 bg-white"
+						on:click={() => KanjiCanvas.erase('can')}>↻ Erase</button
+					>
+					<br />
+					<button
+						class="text-black p-2.5 rounded-lg m-2 transition-transform ease-in-out duration-300 hover:scale-105 bg-white"
+						on:click={() => KanjiCanvas.deleteLast('can')}>↩ Undo</button
+					>
+				</div>
+			</div>
+		</div>
+		<div>
+			<h1 class="font-semibold text-xl m-2.5 text-left">Recognized Characters</h1>
+			{#each charactersArr as character}
+				<button
+					class="w-fit h-fit font-jp bg-white p-2.5 rounded-lg m-2 transition-transform ease-in-out duration-300 hover:scale-105 text-black text-6xl"
+					on:click={() => handleSubmit(character)}>{character}</button
+				>
+			{/each}
 		</div>
 	</div>
 {/if}

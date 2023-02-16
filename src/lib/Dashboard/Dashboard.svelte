@@ -10,6 +10,8 @@
 	let dev = false
 	let liveGame = false
 
+	let liveEndpoint = 'https://starterkana-live.onrender.com/'
+
 	let activeTask = null
 	let sTask = false
 	let openPage = () => {}
@@ -55,7 +57,7 @@
 	let offline = 0 // 0 = check, 1 online 2 offline
 	let x = new XMLHttpRequest()
 
-	fetchWithTimeout('https://starterkana-live.onrender.com/status', { timeout: 8000 })
+	fetchWithTimeout(liveEndpoint + '/status', { timeout: 8000 })
 		.then(() => (offline = 1))
 		.catch(() => (offline = 2))
 </script>

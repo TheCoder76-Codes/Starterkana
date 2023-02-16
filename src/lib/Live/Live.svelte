@@ -3,7 +3,7 @@
 	import Player from './Player.svelte'
 	import Host from './Host.svelte'
 	export let userData
-	let endpoint = 'https://starterkana-live.onrender.com'
+	let endpoint = 'https://starterkana-live.onrender.com/'
 
 	const socket = io(endpoint)
 

@@ -3,6 +3,8 @@
 	export let userData
 	export let sTask
 	export let streaks
+	import './kanji-canvas'
+	import './ref-patterns'
 	import * as wanakana from 'wanakana'
 	import { onMount } from 'svelte'
 	import ViewResults from './ViewResults.svelte'
@@ -384,15 +386,16 @@
 	allArr.sort(() => Math.random() - 0.5)
 	onMount(() => {
 		if (activeTask.answerIn == 1) {
-			allArr.forEach(([jp, ro]) => {
-				if (wanakana.isHiragana(jp)) {
-					wanakana.bind(document.getElementById(jp), { IMEMode: 'toHiragana' })
-				} else {
-					wanakana.bind(document.getElementById(jp), { IMEMode: 'toKatakana' })
-				}
-			})
+			KanjiCanvas.init('can')
+			document.getElementById(allArr[jpIndex][0]).style.transform = 'scale(1.05)'
 		}
 	})
+	let charactersArr = []
+	function kcan() {
+		let characters = KanjiCanvas.recognize('can')
+		characters = characters.split(' ').filter((i) => i != '')
+		charactersArr = characters
+	}
 
 	function arrayContainsAll(needle, haystack) {
 		for (let i = 0; i < needle.length; i++) {
@@ -419,6 +422,14 @@
 	let countdownInt = false
 	let viewingResults = false
 	let allowedReload = true
+	let jpIndex = 0
+	let hgOrKk = ''
+
+	if (wanakana.isHiragana(allArr[jpIndex][0])) {
+		hgOrKk = 'Hiragana'
+	} else {
+		hgOrKk = 'Katakana'
+	}
 
 	let ferror = null
 
@@ -569,9 +580,10 @@
 		)
 	}
 
-	function handleSubmit(jp, ro) {
-		let input = document.getElementById(jp)
-		if (input.value.length <= 0) return
+	function handleSubmit(jp, ro = null) {
+		let input
+		if (ro) input = document.getElementById(jp)
+		if (ro && input.value.length <= 0) return
 		if (activeTask.answerIn == 0) {
 			let ans = ro.split('|')
 			if (ans.includes(input.value)) {
@@ -603,31 +615,44 @@
 				}
 			}
 		} else {
-			if (input.value == jp) {
-				input.parentElement.classList.remove('bg-highlight')
-				input.parentElement.classList.add('bg-correct')
-				input.parentElement.style.transform = 'scale(1.00)'
-				input.disabled = true
-				let index = indexOf(allArr, [jp, ro], arraysIdentical)
-				if (index > -1 && index + 1 != allArr.length) {
-					document.getElementById(allArr[index + 1][0]).focus()
+			let item = allArr[jpIndex] // ['あ', 'a']
+			if (jp == item[0]) {
+				// correct
+				// reset canvas, recognized characters and add to jpIndex
+				totalCompleted++
+				let form = document.getElementById(item[0])
+				form.classList.remove('bg-highlight')
+				form.classList.add('bg-correct')
+				form.style.transform = 'scale(1.00)'
+				KanjiCanvas.erase('can')
+				charactersArr = []
+				if (allArr[jpIndex + 1]) {
+					jpIndex++
+					if (wanakana.isHiragana(allArr[jpIndex][0])) {
+						hgOrKk = 'Hiragana'
+					} else {
+						hgOrKk = 'Katakana'
+					}
+					document.getElementById(allArr[jpIndex][0]).style.transform = 'scale(1.05)'
 				} else {
 					document.getElementById('fbtn').focus()
 				}
 			} else {
-				input.parentElement.classList.remove('bg-highlight')
-				input.parentElement.classList.add('bg-incorrect')
-				input.placeholder = input.value
-				input.value = ''
+				// incorrect
+				let form = document.getElementById(item[0])
+				form.classList.remove('bg-highlight')
+				form.classList.add('bg-incorrect')
+				KanjiCanvas.erase('can')
+				charactersArr = []
 				if (activeTask.incorrect) {
-					if (activeTask.incorrect[jp]) {
-						activeTask.incorrect[jp]++
+					if (activeTask.incorrect[jp + '|' + ro]) {
+						activeTask.incorrect[jp + '|' + ro]++
 					} else {
-						activeTask.incorrect[jp] = 1
+						activeTask.incorrect[jp + '|' + ro] = 1
 					}
 				} else {
 					activeTask.incorrect = {}
-					activeTask.incorrect[jp] = 1
+					activeTask.incorrect[jp + '|' + ro] = 1
 				}
 			}
 		}
@@ -696,12 +721,12 @@
 		</div>
 	{/if}
 	<div class="block md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6">
-		{#each allArr as [jp, ro]}
-			<form
-				class="bg-highlight p-5 rounded-lg m-2 text-center transition-transform ease-in-out duration-300 focus:scale-105"
-				on:submit|preventDefault={() => handleSubmit(jp, ro)}
-			>
-				{#if activeTask.answerIn == 0}
+		{#if activeTask.answerIn == 0}
+			{#each allArr as [jp, ro]}
+				<form
+					class="bg-highlight p-5 rounded-lg m-2 text-center transition-transform ease-in-out duration-300 focus:scale-105"
+					on:submit|preventDefault={() => handleSubmit(jp, ro)}
+				>
 					<h1 class="text-6xl text-white font-jp">{jp}</h1>
 					<input
 						type="text"
@@ -719,27 +744,57 @@
 							document.getElementById(jp).parentElement.style.transform = 'scale(1.00)'
 						}}
 					/>
-				{:else if activeTask.answerIn == 1}
+				</form>
+			{/each}
+		{:else if activeTask.answerIn == 1}
+			{#each allArr as [jp, ro]}
+				<form
+					class="bg-highlight p-5 rounded-lg m-2 text-center transition-transform ease-in-out duration-300 focus:scale-105"
+					id={jp}
+					on:submit|preventDefault={() => handleSubmit(jp, ro)}
+				>
 					<h1 class="text-6xl text-white">{ro.split('|')[0]}</h1>
-					<input
-						type="text"
-						placeholder="Answer"
-						class="text-lg rounded-lg outline-none p-2 mt-5 w-full hover:disabled:cursor-not-allowed"
-						autocomplete="off"
-						autocorrect="off"
-						autocapitalize="off"
-						spellcheck="false"
-						id={jp}
-						on:focus={() => {
-							document.getElementById(jp).parentElement.style.transform = 'scale(1.05)'
-						}}
-						on:blur={() => {
-							document.getElementById(jp).parentElement.style.transform = 'scale(1.00)'
-						}}
-					/>
-				{/if}
-			</form>
-		{/each}
+					<div class="hidden" data-jp={jp} data-ro={ro} id="data" />
+				</form>
+			{/each}
+			<div
+				class="w-screen h-[40vh] fixed bottom-0 left-0 p-5 lg:px-16 bg-highlight lg:flex lg:flex-row overflow-y-auto"
+			>
+				<div>
+					<h1 class="font-semibold text-xl m-2.5">Drawing Canvas</h1>
+					<p class="text-base mx-2.5">{hgOrKk}</p>
+					<div class="flex flex-row">
+						<canvas
+							width="256px"
+							height="256px"
+							id="can"
+							on:click={kcan}
+							class="bg-white rounded-lg m-2.5"
+						/>
+						<div>
+							<button
+								class="text-black p-2.5 rounded-lg m-2 transition-transform ease-in-out duration-300 hover:scale-105 bg-white"
+								on:click={() => KanjiCanvas.erase('can')}>↻ Erase</button
+							>
+							<br />
+							<button
+								class="text-black p-2.5 rounded-lg m-2 transition-transform ease-in-out duration-300 hover:scale-105 bg-white"
+								on:click={() => KanjiCanvas.deleteLast('can')}>↩ Undo</button
+							>
+						</div>
+					</div>
+				</div>
+				<div>
+					<h1 class="font-semibold text-xl m-2.5">Recognized Characters</h1>
+					{#each charactersArr as character}
+						<button
+							class="w-fit h-fit font-jp bg-white p-2.5 rounded-lg m-2 transition-transform ease-in-out duration-300 hover:scale-105 text-black text-6xl"
+							on:click={() => handleSubmit(character)}>{character}</button
+						>
+					{/each}
+				</div>
+			</div>
+		{/if}
 		<button
 			class="bg-highlight p-5 rounded-lg m-2 text-center text-white text-4xl font-semibold transition-transform ease-in-out duration-300 focus:scale-105 hover:scale-105 outline-none"
 			id="fbtn"
