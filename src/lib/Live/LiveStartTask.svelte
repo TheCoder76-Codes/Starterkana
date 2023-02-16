@@ -22,7 +22,20 @@
 	if (activeTask.incorrect) activeTask.incorrect = null
 	let inTask = false
 
+	function checkJP() {
+		if (activeTask.answerIn == 1) {
+			// clean array from combo kana, doesn't work with answer in jp
+			activeTask.hiragana = activeTask.hiragana.filter((item) => !Object.keys(comboHiragana).includes(item))
+			activeTask.katakana = activeTask.katakana.filter((item) => !Object.keys(comboKatakana).includes(item))
+		}
+	}
+
 	function startTask() {
+		if (activeTask.answerIn == 1) {
+			// clean array from combo kana, doesn't work with answer in jp
+			activeTask.hiragana = activeTask.hiragana.filter((item) => !Object.keys(comboHiragana).includes(item))
+			activeTask.katakana = activeTask.katakana.filter((item) => !Object.keys(comboKatakana).includes(item))
+		}
 		if (activeTask.hiragana.length > 0 || activeTask.katakana.length > 0) {
 			game.task = activeTask
 			socket.emit('hostStartGame', activeTask, game)
@@ -409,12 +422,10 @@
 			<input type="radio" name="answerIn" bind:group={activeTask.answerIn} value={0} />
 			Answer in Romaji
 		</label> <br />
-		{#if isDev}
-			<label class="text-lg m-2">
-				<input type="radio" name="answerIn" bind:group={activeTask.answerIn} value={1} />
-				Answer in Japanese
-			</label> <br />
-		{/if}
+		<label class="text-lg m-2">
+			<input type="radio" name="answerIn" bind:group={activeTask.answerIn} value={1} />
+			Answer in Japanese
+		</label> <br />
 	</div>
 	<div class="text-center">
 		<h1 class="text-xl font-semibold">Hiragana</h1>
@@ -481,37 +492,39 @@
 				</label>
 			{/each}
 		</div>
-		<h2 class="text-lg font-semibold mt-2">Combination Hiragana</h2>
-		<div class="block gap-5 md:grid grid-cols-2 my-2 sm:m-5">
-			<button
-				class="btn-main col-span-2"
-				on:click={() => {
-					Object.keys(comboHiragana).forEach((item) => {
-						let i = activeTask.hiragana.indexOf(item)
-						if (i === -1) {
-							activeTask.hiragana.push(item)
-						} else {
-							activeTask.hiragana.splice(i, 1)
-						}
-					})
-					activeTask.hiragana = [...new Set(activeTask.hiragana)]
-				}}>Toggle All</button
-			>
-			{#each Object.entries(comboHiragana) as [key, value]}
-				<label>
-					<input
-						type="checkbox"
-						class="peer hidden"
-						bind:group={activeTask.hiragana}
-						name="gana"
-						value={key}
-					/>
-					<div class="bg-highlight peer-checked:bg-main p-2 rounded-md hover:cursor-pointer my-2 md:my-0">
-						{key}/{value[0][0]}
-					</div>
-				</label>
-			{/each}
-		</div>
+		{#if activeTask.answerIn != 1}
+			<h2 class="text-lg font-semibold mt-2">Combination Hiragana</h2>
+			<div class="block gap-5 md:grid grid-cols-2 my-2 sm:m-5">
+				<button
+					class="btn-main col-span-2"
+					on:click={() => {
+						Object.keys(comboHiragana).forEach((item) => {
+							let i = activeTask.hiragana.indexOf(item)
+							if (i === -1) {
+								activeTask.hiragana.push(item)
+							} else {
+								activeTask.hiragana.splice(i, 1)
+							}
+						})
+						activeTask.hiragana = [...new Set(activeTask.hiragana)]
+					}}>Toggle All</button
+				>
+				{#each Object.entries(comboHiragana) as [key, value]}
+					<label>
+						<input
+							type="checkbox"
+							class="peer hidden"
+							bind:group={activeTask.hiragana}
+							name="gana"
+							value={key}
+						/>
+						<div class="bg-highlight peer-checked:bg-main p-2 rounded-md hover:cursor-pointer my-2 md:my-0">
+							{key}/{value[0][0]}
+						</div>
+					</label>
+				{/each}
+			</div>
+		{/if}
 	</div>
 	<div class="text-center">
 		<h1 class="text-xl font-semibold">Katakana</h1>
@@ -577,37 +590,39 @@
 				</label>
 			{/each}
 		</div>
-		<h2 class="text-lg font-semibold mt-2">Combination Katakana</h2>
-		<div class="block gap-5 md:grid grid-cols-2 my-2 sm:m-5">
-			<button
-				class="btn-main col-span-2"
-				on:click={() => {
-					Object.keys(comboKatakana).forEach((item) => {
-						let i = activeTask.katakana.indexOf(item)
-						if (i === -1) {
-							activeTask.katakana.push(item)
-						} else {
-							activeTask.katakana.splice(i, 1)
-						}
-					})
-					activeTask.katakana = [...new Set(activeTask.katakana)]
-				}}>Toggle All</button
-			>
-			{#each Object.entries(comboKatakana) as [key, value]}
-				<label>
-					<input
-						type="checkbox"
-						class="peer hidden"
-						bind:group={activeTask.katakana}
-						name="kana"
-						value={key}
-					/>
-					<div class="bg-highlight peer-checked:bg-main p-2 rounded-md hover:cursor-pointer my-2 md:my-0">
-						{key}/{value[0][0]}
-					</div>
-				</label>
-			{/each}
-		</div>
+		{#if activeTask.answerIn != 1}
+			<h2 class="text-lg font-semibold mt-2">Combination Katakana</h2>
+			<div class="block gap-5 md:grid grid-cols-2 my-2 sm:m-5">
+				<button
+					class="btn-main col-span-2"
+					on:click={() => {
+						Object.keys(comboKatakana).forEach((item) => {
+							let i = activeTask.katakana.indexOf(item)
+							if (i === -1) {
+								activeTask.katakana.push(item)
+							} else {
+								activeTask.katakana.splice(i, 1)
+							}
+						})
+						activeTask.katakana = [...new Set(activeTask.katakana)]
+					}}>Toggle All</button
+				>
+				{#each Object.entries(comboKatakana) as [key, value]}
+					<label>
+						<input
+							type="checkbox"
+							class="peer hidden"
+							bind:group={activeTask.katakana}
+							name="kana"
+							value={key}
+						/>
+						<div class="bg-highlight peer-checked:bg-main p-2 rounded-md hover:cursor-pointer my-2 md:my-0">
+							{key}/{value[0][0]}
+						</div>
+					</label>
+				{/each}
+			</div>
+		{/if}
 	</div>
 	<div class="col-span-2 text-center">
 		<button class="btn-main" on:click={startTask}>Start Game!</button>
