@@ -10,7 +10,7 @@
 	let dev = false
 	let liveGame = false
 
-	let liveEndpoint = 'https://starterkana-live.onrender.com/'
+	let liveEndpoint = 'https://starterkana-live.onrender.com'
 
 	let activeTask = null
 	let sTask = false
