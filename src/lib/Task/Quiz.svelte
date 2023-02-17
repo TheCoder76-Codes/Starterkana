@@ -769,6 +769,7 @@
 							height="256px"
 							id="can"
 							on:click={kcan}
+							on:touchend|preventDefault={kcan}
 							class="bg-white rounded-lg m-2.5"
 						/>
 						<div>

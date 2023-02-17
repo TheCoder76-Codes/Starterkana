@@ -644,7 +644,14 @@
 			<h1 class="font-semibold text-xl m-2.5 text-left">Drawing Canvas</h1>
 			<p class="text-base mx-2 5">{hgOrKk}</p>
 			<div class="flex flex-row">
-				<canvas width="256px" height="256px" id="can" on:click={kcan} class="bg-white rounded-lg m-2.5" />
+				<canvas
+					width="256px"
+					height="256px"
+					id="can"
+					on:click={kcan}
+					on:touchend|preventDefault={kcan}
+					class="bg-white rounded-lg m-2.5"
+				/>
 				<div>
 					<button
 						class="text-black p-2.5 rounded-lg m-2 transition-transform ease-in-out duration-300 hover:scale-105 bg-white"
