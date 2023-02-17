@@ -20,15 +20,6 @@
 				unlocked = true
 				fullAccess = true
 				return
-			} else if (
-				CryptoJS.AES.decrypt(
-					'U2FsdGVkX18FziwsoTy7g9FayKaLTsRlHpfuhRqwf2i975unpHRf8L6gBkZ8OhAD',
-					password
-				).toString(CryptoJS.enc.Utf8) == 'unlock but only err pls'
-			) {
-				unlocked = true
-				fullAccess = false
-				return
 			} else {
 				invalid = true
 				return

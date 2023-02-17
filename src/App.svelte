@@ -100,7 +100,7 @@
 {:else if !setup}
 	<Setup bind:setup bind:userData />
 {:else if setup}
-	<Dash bind:userData bind:streaks />
+	<Dash bind:userData bind:streaks bind:errors />
 {:else}
 	<Setup bind:setup bind:userData />
 {/if}

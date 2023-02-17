@@ -5,8 +5,10 @@
 	import Sync from './Sync.svelte'
 	import MobileWarning from './MobileWarning.svelte'
 	import Live from '../Live/Live.svelte'
+	import Errors from './Errors.svelte'
 	export let userData
 	export let streaks
+	export let errors
 	let dev = false
 	let liveGame = false
 
@@ -14,6 +16,7 @@
 
 	let activeTask = null
 	let sTask = false
+	let showErrors = false
 	let openPage = () => {}
 
 	let vNumber = ''
@@ -21,8 +24,12 @@
 		.then((res) => res.json())
 		.then((res) => {
 			vNumber = res.tag_name
-			openPage = () => {
-				window.open(res.html_url, '_blank')
+			openPage = (e) => {
+				if (e.shiftKey || e.altKey) {
+					showErrors = true
+				} else {
+					window.open(res.html_url, '_blank')
+				}
 			}
 		})
 
@@ -86,6 +93,8 @@
 		</div>
 		<StartTask bind:activeTask bind:userData bind:sTask bind:streaks />
 	</main>
+{:else if showErrors}
+	<Errors bind:showErrors bind:errors bind:userData />
 {:else}
 	<main class="p-10 h-screen overflow-x-hidden">
 		<div class="flex flex-row place-content-between">
@@ -119,20 +128,12 @@
 			{/if}
 
 			<div class="flex gap-5">
-				<p
-					class="text-fade text-lg hover:underline hover:cursor-pointer mt-5"
-					on:click={openPage}
-					on:keypress={openPage}
-				>
+				<button class="text-fade text-lg hover:underline hover:cursor-pointer mt-5" on:click={openPage}>
 					Starterkana {vNumber}
-				</p>
-				<p
-					class="text-fade text-lg hover:underline hover:cursor-pointer mt-5"
-					on:click={setupSync}
-					on:keypress={setupSync}
-				>
+				</button>
+				<button class="text-fade text-lg hover:underline hover:cursor-pointer mt-5" on:click={setupSync}>
 					Setup Sync ↗
-				</p>
+				</button>
 			</div>
 		{/if}
 	</main>
