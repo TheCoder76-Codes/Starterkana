@@ -556,22 +556,22 @@
 			<h1 class="text-6xl font-semibold mb-10 md:mb-24 lg:mb-64 xl:mb-80">
 				This is '{allArr[index][1].split('|')[0]}' <span class="font-jp">{allArr[index][0]}</span>
 			</h1>
-			{@html nudge}
+			<form on:submit|preventDefault={handleSubmit} class="mt-10 md:mt-24 lg:mt-64 xl:mt-80">
+				{@html nudge}
+				<input
+					type="text"
+					bind:this={input}
+					class="m-2 text-lg border rounded-lg border-gray-300 hover:border-gray-400 focus:border-gray-500 outline-none p-2 disabled:hover:cursor-not-allowed"
+					placeholder={'Type in ' + allArr[index][1].split('|')[0]}
+					id={allArr[index][0]}
+					autocomplete="off"
+					autocorrect="off"
+					autocapitalize="off"
+					spellcheck="false"
+				/>
+			</form>
 		</div>
 	</div>
-	<form on:submit|preventDefault={handleSubmit} class="mt-10 md:mt-24 lg:mt-64 xl:mt-80">
-		<input
-			type="text"
-			bind:this={input}
-			class="m-2 text-lg border rounded-lg border-gray-300 hover:border-gray-400 focus:border-gray-500 outline-none p-2 disabled:hover:cursor-not-allowed"
-			placeholder={'Type in ' + allArr[index][1].split('|')[0]}
-			id={allArr[index][0]}
-			autocomplete="off"
-			autocorrect="off"
-			autocapitalize="off"
-			spellcheck="false"
-		/>
-	</form>
 {:else if activeTask.answerIn == 1}
 	<div class="h-full w-full text-center mt-10 md:mt-20">
 		<h1 class="text-6xl font-semibold">
