@@ -26,8 +26,15 @@
 					gidErr = true
 					throw new Error('Network error when getting inputted GID: ' + res.status)
 				}
+			}).catch((err) => {
+				console.log(err)
+				groupError = true
 			})
 			.then((res) => {
+				if (!res) {
+					groupError = true
+					return
+				}
 				userData.groupID = gid
 				userData.group = res
 				userData = userData
@@ -135,8 +142,15 @@
 		fetch(userData.groupID, {
 			method: 'GET',
 		})
-			.then((res) => res.json())
+			.then((res) => res.json()).catch((err) => {
+				console.log(err)
+				groupError = true
+			})
 			.then((res) => {
+				if (!res) {
+					groupError = true
+					return
+				}
 				userData.group = res
 				userData = userData
 				let withoutMe = userData.group.scores.filter((item) => item.uid != userData.uid)
@@ -171,8 +185,15 @@
 		fetch(userData.groupID, {
 			method: 'GET',
 		})
-			.then((res) => res.json())
+			.then((res) => res.json()).catch((err) => {
+				console.log(err)
+				groupError = true
+			})
 			.then((res) => {
+				if (!res) {
+					groupError = true
+					return
+				}
 				userData.group = res
 				userData = userData
 				let me = userData.group.scores.filter((item) => item.uid == userData.uid)
