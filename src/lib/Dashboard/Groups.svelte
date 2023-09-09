@@ -49,7 +49,10 @@
 							'Content-Length': String(stringify.length),
 						},
 						body: stringify,
-					}).then((res) => res.json())
+					}).then((res) => res.json()).catch((err) => {
+						console.log(err)
+						groupError = true
+					})
 				} else if (me.length > 0 && me[0].points > userData.points) {
 					let index = userData.group.findIndex(
 						(item) => item.points < userData.points && item.uid == userData.uid
@@ -72,7 +75,10 @@
 							'Content-Length': String(stringify.length),
 						},
 						body: stringify,
-					}).then((res) => res.json())
+					}).then((res) => res.json()).catch((err) => {
+						console.log(err)
+						groupError = true
+					})
 				}
 				userData.group.scores.sort((a, b) => {
 					if (a.points > b.points) return -1 // any negative number works
@@ -82,6 +88,9 @@
 				if (userData.cookies) {
 					localStorage.setItem('userData', JSON.stringify(userData))
 				}
+			}).catch((err) => {
+				console.log(err)
+				groupError = true
 			})
 	}
 	function createGroup() {
@@ -110,6 +119,9 @@
 			if (userData.cookies) {
 				localStorage.setItem('userData', JSON.stringify(userData))
 			}
+		}).catch((err) => {
+			console.log(err)
+			groupError = true
 		})
 	}
 	if (!userData.uid) {
@@ -143,7 +155,13 @@
 					if (userData.cookies) {
 						localStorage.setItem('userData', JSON.stringify(userData))
 					}
+				}).catch((err) => {
+					console.log(err)
+					groupError = true
 				})
+			}).catch((err) => {
+				console.log(err)
+				groupError = true
 			})
 	}
 
@@ -175,7 +193,10 @@
 							'Content-Length': String(stringify.length),
 						},
 						body: stringify,
-					}).then((res) => res.json())
+					}).then((res) => res.json()).catch((err) => {
+						console.log(err)
+						groupError = true
+					})
 				} else if (me.length > 0 && me[0].points > userData.points) {
 					let index = userData.group.findIndex(
 						(item) => item.points < userData.points && item.uid == userData.uid
@@ -198,7 +219,10 @@
 							'Content-Length': String(stringify.length),
 						},
 						body: stringify,
-					}).then((res) => res.json())
+					}).then((res) => res.json()).catch((err) => {
+						console.log(err)
+						groupError = true
+					})
 				}
 				userData.group.scores.sort((a, b) => {
 					if (a.points > b.points) return -1 // any negative number works
