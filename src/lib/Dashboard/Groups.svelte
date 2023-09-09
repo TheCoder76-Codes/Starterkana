@@ -147,6 +147,8 @@
 			})
 	}
 
+	let groupError = false
+
 	if (userData.groupID) {
 		fetch(userData.groupID, {
 			method: 'GET',
@@ -207,6 +209,10 @@
 					localStorage.setItem('userData', JSON.stringify(userData))
 				}
 			})
+			.catch((err) => {
+				console.log(err)
+				groupError = true
+			})
 	}
 
 	if (userData.group && userData.group.scores) {
@@ -245,7 +251,7 @@
 	<div class="bg-highlight p-5 rounded-xl">
 		<div class="block md:flex place-content-between w-full flex-row my-2">
 			<h1 class="text-xl font-medium">Leaderboard</h1>
-			<p>Group ID: {userData.groupID.split('https://www.jsonblob.com/api/jsonBlob/')[1]}</p>
+			<p>Group ID: {groupError ? 'An error occurred' : userData.groupID.split('https://www.jsonblob.com/api/jsonBlob/')[1]}</p>
 		</div>
 		{#each userData.group.scores as score}
 			<div class="block md:flex place-content-between w-full flex-row even:bg-main p-2.5 rounded-lg">
@@ -254,7 +260,11 @@
 			</div>
 		{/each}
 	</div>
-	<button class="btn-main" on:click={leaveGroup}>Leave this group →</button>
+	{#if groupError}
+		<p class="text-red-500">Something went wrong.</p>
+	{:else}
+		<button class="btn-main" on:click={leaveGroup}>Leave this group →</button>
+	{/if}
 {:else}
 	<p class="mt-5 m-2">Looks like you aren't in a group yet.</p>
 	<p class="text-red-500 m-2">
