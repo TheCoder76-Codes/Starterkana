@@ -392,6 +392,7 @@
 	})
 	let charactersArr = []
 	function kcan() {
+		console.log('hello')
 		let characters = KanjiCanvas.recognize('can')
 		characters = characters.split(' ').filter((i) => i != '')
 		charactersArr = characters
@@ -661,6 +662,10 @@
 		viewingResults = true
 		finished = false
 	}
+
+	document.body.addEventListener('touchend', function () {
+		kcan()
+	})
 </script>
 
 {#if finished}
@@ -720,7 +725,7 @@
 			</div>
 		</div>
 	{/if}
-	<div class="block md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6">
+	<div class="block md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6" style="margin-bottom: {activeTask.answerIn == 1 ? '40vh' : '0'}">
 		{#if activeTask.answerIn == 0}
 			{#each allArr as [jp, ro]}
 				<form
@@ -747,16 +752,16 @@
 				</form>
 			{/each}
 		{:else if activeTask.answerIn == 1}
-			{#each allArr as [jp, ro]}
-				<form
-					class="bg-highlight p-5 rounded-lg m-2 text-center transition-transform ease-in-out duration-300 focus:scale-105"
-					id={jp}
-					on:submit|preventDefault={() => handleSubmit(jp, ro)}
-				>
-					<h1 class="text-6xl text-white">{ro.split('|')[0]}</h1>
-					<div class="hidden" data-jp={jp} data-ro={ro} id="data" />
-				</form>
-			{/each}
+				{#each allArr as [jp, ro]}
+					<form
+						class="bg-highlight p-5 rounded-lg m-2 text-center transition-transform ease-in-out duration-300 focus:scale-105"
+						id={jp}
+						on:submit|preventDefault={() => handleSubmit(jp, ro)}
+					>
+						<h1 class="text-6xl text-white">{ro.split('|')[0]}</h1>
+						<div class="hidden" data-jp={jp} data-ro={ro} id="data" />
+					</form>
+				{/each}
 			<div
 				class="w-screen h-[40vh] fixed bottom-0 left-0 p-5 lg:px-16 bg-highlight lg:flex lg:flex-row overflow-y-auto"
 			>
@@ -769,7 +774,6 @@
 							height="256px"
 							id="can"
 							on:click={kcan}
-							on:touchend|preventDefault={kcan}
 							class="bg-white rounded-lg m-2.5"
 						/>
 						<div>
