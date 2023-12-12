@@ -617,7 +617,7 @@
 			{:else}
 				<label class="text-lg m-2">
 					<input type="radio" name="answerIn" bind:group={activeTask.answerIn} value={0} />
-					Answer in Romanji
+					Answer in Romaji
 				</label> <br />
 				<label class="text-lg m-2">
 					<input type="radio" name="answerIn" bind:group={activeTask.answerIn} value={1} />
