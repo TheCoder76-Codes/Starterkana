@@ -15,9 +15,12 @@
 		activeTask = {
 			hiragana: [],
 			katakana: [],
+			odkanji: [],
+			oskanji: [],
 			title: '',
 			type: 0, // 0 QUIZ 1 LEARN 2 SPEED 3 TEST
 			answerIn: 0, // 0 ROMANJI 1 JAPENESE
+			kanji: false, // FALSE kana TRUE kanji (CANT BE BOTH)
 		}
 	}
 	if (activeTask.incorrect) activeTask.incorrect = null
@@ -32,15 +35,58 @@
 	}
 
 	function startTask() {
-		if (activeTask.answerIn == 1) {
-			// clean array from combo kana, doesn't work with answer in jp
-			activeTask.hiragana = activeTask.hiragana.filter((item) => !Object.keys(comboHiragana).includes(item))
-			activeTask.katakana = activeTask.katakana.filter((item) => !Object.keys(comboKatakana).includes(item))
-		}
-		if (activeTask.hiragana.length > 0 || activeTask.katakana.length > 0) {
-			inTask = true
+		if (activeTask.kanji) {
+			// Ensure the other arrays are clear
+			activeTask.hiragana = []
+			activeTask.katakana = []
+			activeTask.ounits = []
+			if (activeTask.odkanji.length > 0 || activeTask.oskanji.length > 0) {
+				let kod = []
+				let kos = []
+				let ounits = []
+				let odunitslist = Object.keys(kanjiod)
+				let osunitslist = Object.keys(kanjios)
+				activeTask.odkanji.forEach((item) => {
+					kod.push(...item)
+					odunitslist.find((unit) => {
+						console.log(unit, item)
+						if (kanjiod[unit][0][0] == item[0][0]) {
+							ounits.push('d'+unit)
+						}
+					})
+				})
+				activeTask.oskanji.forEach((item) => {
+					kos.push(...item)
+					osunitslist.find((unit) => {
+						if (kanjios[unit][0][0] == item[0][0]) {
+							ounits.push('s'+unit)
+						}
+					})
+				})
+				// figure out units
+
+
+				activeTask.odkanji = kod
+				activeTask.oskanji = kos
+				activeTask.ounits = ounits
+				inTask = true
+			} else {
+				invalid = true
+			}
 		} else {
-			invalid = true
+			// Ensure the kanji arrays are clear
+			activeTask.odkanji = []
+			activeTask.oskanji = []
+			if (activeTask.answerIn == 1) {
+				// clean array from combo kana, doesn't work with answer in jp
+				activeTask.hiragana = activeTask.hiragana.filter((item) => !Object.keys(comboHiragana).includes(item))
+				activeTask.katakana = activeTask.katakana.filter((item) => !Object.keys(comboKatakana).includes(item))
+			}
+			if (activeTask.hiragana.length > 0 || activeTask.katakana.length > 0) {
+				inTask = true
+			} else {
+				invalid = true
+			}
 		}
 	}
 
@@ -390,6 +436,140 @@
 			['ぢょ', 'dyo'],
 		],
 	}
+
+	let kanjiod = {
+		unit2: [
+			['一', 'いち', 'ichi', 'one'],
+			['二', 'に', 'ni', 'two'],
+			['三', 'さん', 'san', 'three'],
+			['四', 'よん|し', 'yon|shi', 'four'],
+			['五', 'ご', 'go', 'five'],
+			['六', 'ろく', 'roku', 'six'],
+			['七', 'なな|しち', 'nana|shichi', 'seven'],
+			['八', 'はち', 'hachi', 'eight'],
+			['九', 'きゅう', 'kyuu', 'nine'],
+			['十', 'じゅう', 'jyuu|juu', 'ten'],
+		],
+		unit3: [
+			['日', 'にち|に|び', 'nichi|ni|bi', 'day|sunday|date'],
+			['本', 'ほん', 'hon', 'book'],
+			['人', 'にん|じん|ひとり', 'nin|jin|hitori', 'person'],
+		],
+		unit7: [
+			['月', 'げつ|がつ', 'getsu|gatsu', 'month|monday'],
+			['日', 'にち|に|び', 'nichi|ni|bi', 'day|sunday|date'],
+			['火', 'か', 'ka', 'fire|tuesday'],
+			['水', 'すい', 'sui', 'water|wednesday'],
+			['木', 'もく', 'moku', 'tree|thursday'],
+			['金', 'きん', 'kin', 'gold|friday'],
+			['土', 'ど', 'do', 'soil|saturday'],
+			['曜', 'よう', 'you', 'weekday'],
+			['休', 'やす|やすみ', 'yasu|yasumi', 'holiday|holidays'],
+		]
+	}
+	// kanji, reading jp, reading ro, meaning
+	let kanjios = {
+		unit1: [
+			['何', 'なん|なに', 'nan|nani', 'what'],
+			['時', 'とき|じ', 'toki|ji', 'time|hour'],
+			['分', 'ふん|ぶん|ぷん', 'fun|bun|pun', 'minute|minutes'],
+			['半', 'はん', 'han', 'half|half past|half-past|halfpast'],
+		],
+		unit2: [
+			['上', 'うえ', 'ue', 'above|up|over|on top|on top of'],
+			['下', 'した', 'shita', 'below|down|under|beneath'],
+			['中', 'なか', 'naka', 'inside|middle|center|in the middle'],
+			['前', 'まえ', 'mae', 'before|in front of'],
+		],
+		unit3: [
+			['学', 'がく', 'gaku', 'study|learn|learning'],
+			['校', 'こう', 'kou', 'school|institute'],
+			['年', 'ねん', 'nen', 'year|years'],
+			['生', 'せい|しょう', 'sei|shou', 'life|student'],
+		],
+		unit4: [
+			['春', 'はる', 'haru', 'spring'],
+			['夏', 'なつ', 'natsu', 'summer'],
+			['秋', 'あき', 'aki', 'autumn|fall'],
+			['冬', 'ふゆ', 'fuyu', 'winter'],
+		],
+		unit5: [
+			['百', 'ひゃく|びゃく|ぴゃく', 'hyaku|byaku|pyaku', '100|hundred|one hundred|a hundred'],
+			['千', 'せん|ぜん', 'sen|zen', '1000|thousand|a thousand|one thousand'],
+			['万', 'まん', 'man', '10000|ten thousand|a ten thousand'],
+			['円', 'えん', 'en', 'yen|circle|yen coin'],
+		],
+		unit6: [
+			['食', 'た', 'ta', 'eat|food|meal|to eat'],
+			['飲', 'の', 'no', 'drink|beverage|to drink'],
+			['行', 'い', 'i', 'to go|go|to go to'],
+			['買', 'か', 'ka', 'buy|shop|to buy'],
+			['安', 'やす', 'yasu', 'cheap|inexpensive|low'],
+			['高', 'たか', 'taka', 'expensive|high|tall'],
+		],
+		unit7: [
+			['手', 'て', 'te', 'hand'],
+			['目', 'め', 'me', 'eye'],
+			['耳', 'みみ', 'mimi', 'ear'],
+			['口', 'くち', 'kuchi', 'mouth'],
+			['大', 'だい|おお', 'dai', 'big|large'],
+			['小', 'しょう|ちい', 'shou', 'small|little'],
+		],
+		unit8: [
+			// watashi, otoko, onna, ka(kimasu), mi(masu), ki(kimasu), chichi, haha kanji
+			['私', 'わたし|わたくし|し', 'watashi|watakushi|shi', 'I|me|myself'],
+			['男', 'おとこ', 'otoko', 'man|male'],
+			['女', 'おんな', 'onna', 'woman|female'],
+			['書', 'か', 'ka', 'write|to write'],
+			['見', 'み', 'mi', 'see|to see'],
+			['聞', 'き', 'ki', 'hear|to hear'],
+			['父', 'ちち', 'chichi', 'father|dad'],
+			['母', 'はは', 'haha', 'mother|mum'],
+		],
+		unit9: [
+			// migi, hidari, hai(rimasu),de(masu),higashi,nishi,minami,kita kanji
+			['右', 'みぎ', 'migi', 'right'],
+			['左', 'ひだり', 'hidari', 'left'],
+			['入', 'はい', 'hai', 'enter|to enter'],
+			['出', 'で', 'de', 'exit|to exit'],
+			['東', 'ひがし', 'higashi', 'east'],
+			['西', 'にし', 'nishi', 'west'],
+			['南', 'みなみ', 'minami', 'south'],
+			['北', 'きた', 'kita', 'north'],
+		],
+		unit10: [
+			// mai, ima, shuu, sen, ki(masu), su(ndeimasu), su(ki), mei kanji
+			['毎', 'まい', 'mai', 'every|each'],
+			['今', 'いま|こん', 'ima|kon', 'now'],
+			['週', 'しゅう', 'shuu', 'week'],
+			['先', 'せん', 'sen', 'previous|last'],
+			['来', 'き|く|こ|らい', 'ki|ko|ku|rai', 'come|to come'],
+			['住', 'す|じゅう', 'su|juu|jyuu', 'live|to live|reside'],
+			['好', 'す', 'su', 'like|to like'],
+			['名', 'めい|な', 'mei|na', 'name'],
+		],
+		unit11: [
+			// go, ei, uchi, tomo, a(imasu), sha, aida, machi
+			['語', 'ご', 'go', 'word|language'],
+			['英', 'えい', 'ei', 'english|england'],
+			['家', 'うち|いえ|か', 'uchi|ie|ka', 'house|home|family'],
+			['友', 'とも', 'tomo', 'friend'],
+			['会', 'あ|かい', 'a|kai', 'meet|to meet'],
+			['社', 'しゃ|じゃ', 'sha', 'company|corporation'],
+			['間', 'あいだ|かん', 'aida|kan', 'between|among'],
+			['町', 'まち', 'machi', 'town|city'],
+		],
+		unit12: [
+			['新', 'あたら|しん', 'atara|shin', 'new'],
+			['読', 'よ|どく', 'yo|doku', 'read|bookshop|to read'],
+			['電', 'でん', 'den', 'electricity|electric'],
+			['車', 'くるま|しゃ', 'kuruma|sha', 'car|vehicle'],
+			['外', 'そと|がい', 'soto|gai', 'outside|outdoors'],
+			['国', 'くに|こく', 'kuni|koku', 'country'],
+			['話', 'はな|はなし|ワ', 'hana|hanashi|wa', 'tale|talk|to talk|to speak|speak'],
+		]
+	}
+	$: console.log(activeTask.odkanji, activeTask.oskanji)
 </script>
 
 {#if inTask}
@@ -425,15 +605,31 @@
 		</div>
 		<div>
 			<div class="sm:block md:hidden m-5" />
-			<label class="text-lg m-2">
-				<input type="radio" name="answerIn" bind:group={activeTask.answerIn} value={0} />
-				Answer in Romaji
-			</label> <br />
-			<label class="text-lg m-2">
-				<input type="radio" name="answerIn" bind:group={activeTask.answerIn} value={1} on:click={checkJP} />
-				Answer in Japanese
-			</label> <br />
+			{#if !activeTask.kanji}
+				<label class="text-lg m-2">
+					<input type="radio" name="answerIn" bind:group={activeTask.answerIn} value={0} />
+					Answer in Romaji
+				</label> <br />
+				<label class="text-lg m-2">
+					<input type="radio" name="answerIn" bind:group={activeTask.answerIn} value={1} on:click={checkJP} />
+					Answer in Japanese
+				</label> <br />
+			{:else}
+				<label class="text-lg m-2">
+					<input type="radio" name="answerIn" bind:group={activeTask.answerIn} value={0} />
+					Answer in Romanji
+				</label> <br />
+				<label class="text-lg m-2">
+					<input type="radio" name="answerIn" bind:group={activeTask.answerIn} value={1} />
+					Answer with Kanji
+				</label> <br />
+			{/if}
 		</div>
+		<div class="col-span-2 w-full bg-highlight p-2 rounded-lg grid grid-cols-2 gap-5">
+			<button class="{activeTask.kanji ? 'bg-highlight' : 'bg-main'} px-2 py-1 text-xl text-center rounded-lg" on:click={() => {activeTask.kanji=false}}>Hiragana/Katakana</button>
+			<button class="{activeTask.kanji ? 'bg-main' : 'bg-highlight'} px-2 py-1 text-xl text-center rounded-lg" on:click={() => {activeTask.kanji=true}}>Kanji</button>
+		</div>
+		{#if !activeTask.kanji}
 		<div class="text-center">
 			<h1 class="text-xl font-semibold">Hiragana</h1>
 			<h2 class="text-lg font-semibold mt-2">Main Hiragana</h2>
@@ -635,6 +831,194 @@
 				</div>
 			{/if}
 		</div>
+		{:else}
+			<div class="text-center">
+				<h1 class="text-xl font-semibold">Obento Deluxe</h1>
+				<label>
+					<input
+						type="checkbox"
+						class="peer hidden"
+						name="gana"
+						value={kanjiod['unit2']}
+						bind:group={activeTask.odkanji}
+					/>
+					<div class="bg-highlight peer-checked:bg-main p-2 rounded-md hover:cursor-pointer my-2">
+						Unit 2
+					</div>
+				</label>
+				<label>
+					<input
+						type="checkbox"
+						class="peer hidden"
+						name="gana"
+						value={kanjiod['unit3']}
+						bind:group={activeTask.odkanji}
+					/>
+					<div class="bg-highlight peer-checked:bg-main p-2 rounded-md hover:cursor-pointer my-2">
+						Unit 3
+					</div>
+				</label>
+				<label>
+					<input
+						type="checkbox"
+						class="peer hidden"
+						name="gana"
+						value={kanjiod['unit7']}
+						bind:group={activeTask.odkanji}
+					/>
+					<div class="bg-highlight peer-checked:bg-main p-2 rounded-md hover:cursor-pointer my-2">
+						Unit 7
+					</div>
+				</label>
+			</div>
+			<div class="text-center">
+				<h1 class="text-xl font-semibold">Obento Supreme</h1>
+				<label>
+					<input
+						type="checkbox"
+						class="peer hidden"
+						name="gana"
+						value={kanjios['unit1']}
+						bind:group={activeTask.oskanji}
+					/>
+					<div class="bg-highlight peer-checked:bg-main p-2 rounded-md hover:cursor-pointer my-2">
+						Unit 1
+					</div>
+				</label>
+				<label>
+					<input
+						type="checkbox"
+						class="peer hidden"
+						name="gana"
+						value={kanjios['unit2']}
+						bind:group={activeTask.oskanji}
+					/>
+					<div class="bg-highlight peer-checked:bg-main p-2 rounded-md hover:cursor-pointer my-2">
+						Unit 2
+					</div>
+				</label>
+				<label>
+					<input
+						type="checkbox"
+						class="peer hidden"
+						name="gana"
+						value={kanjios['unit3']}
+						bind:group={activeTask.oskanji}
+					/>
+					<div class="bg-highlight peer-checked:bg-main p-2 rounded-md hover:cursor-pointer my-2">
+						Unit 3
+					</div>
+				</label>
+				<label>
+					<input
+						type="checkbox"
+						class="peer hidden"
+						name="gana"
+						value={kanjios['unit4']}
+						bind:group={activeTask.oskanji}
+					/>
+					<div class="bg-highlight peer-checked:bg-main p-2 rounded-md hover:cursor-pointer my-2">
+						Unit 4
+					</div>
+				</label>
+				<label>
+					<input
+						type="checkbox"
+						class="peer hidden"
+						name="gana"
+						value={kanjios['unit5']}
+						bind:group={activeTask.oskanji}
+					/>
+					<div class="bg-highlight peer-checked:bg-main p-2 rounded-md hover:cursor-pointer my-2">
+						Unit 5
+					</div>
+				</label>
+				<label>
+					<input
+						type="checkbox"
+						class="peer hidden"
+						name="gana"
+						value={kanjios['unit6']}
+						bind:group={activeTask.oskanji}
+					/>
+					<div class="bg-highlight peer-checked:bg-main p-2 rounded-md hover:cursor-pointer my-2">
+						Unit 6
+					</div>
+				</label>
+				<label>
+					<input
+						type="checkbox"
+						class="peer hidden"
+						name="gana"
+						value={kanjios['unit7']}
+						bind:group={activeTask.oskanji}
+					/>
+					<div class="bg-highlight peer-checked:bg-main p-2 rounded-md hover:cursor-pointer my-2">
+						Unit 7
+					</div>
+				</label>
+				<label>
+					<input
+						type="checkbox"
+						class="peer hidden"
+						name="gana"
+						value={kanjios['unit8']}
+						bind:group={activeTask.oskanji}
+					/>
+					<div class="bg-highlight peer-checked:bg-main p-2 rounded-md hover:cursor-pointer my-2">
+						Unit 8
+					</div>
+				</label>
+				<label>
+					<input
+						type="checkbox"
+						class="peer hidden"
+						name="gana"
+						value={kanjios['unit9']}
+						bind:group={activeTask.oskanji}
+					/>
+					<div class="bg-highlight peer-checked:bg-main p-2 rounded-md hover:cursor-pointer my-2">
+						Unit 9
+					</div>
+				</label>
+				<label>
+					<input
+						type="checkbox"
+						class="peer hidden"
+						name="gana"
+						value={kanjios['unit10']}
+						bind:group={activeTask.oskanji}
+					/>
+					<div class="bg-highlight peer-checked:bg-main p-2 rounded-md hover:cursor-pointer my-2">
+						Unit 10
+					</div>
+				</label>
+				<label>
+					<input
+						type="checkbox"
+						class="peer hidden"
+						name="gana"
+						value={kanjios['unit11']}
+						bind:group={activeTask.oskanji}
+					/>
+					<div class="bg-highlight peer-checked:bg-main p-2 rounded-md hover:cursor-pointer my-2">
+						Unit 11
+					</div>
+				</label>
+				<label>
+					<input
+						type="checkbox"
+						class="peer hidden"
+						name="gana"
+						value={kanjios['unit12']}
+						bind:group={activeTask.oskanji}
+					/>
+					<div class="bg-highlight peer-checked:bg-main p-2 rounded-md hover:cursor-pointer my-2">
+						Unit 12
+					</div>
+				</label>
+			</div>
+		{/if}
 		<div class="col-span-2 text-center">
 			<button class="btn-main" on:click={startTask}>Start Task →</button>
 			{#if invalid}

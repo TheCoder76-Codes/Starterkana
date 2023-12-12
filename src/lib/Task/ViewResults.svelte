@@ -8,15 +8,23 @@
 	export let percentage
 	export let sTask
 	export let countingCorrect = null
+	export let allKanji
 	let HCorrect
 	let KCorrect
 
+	let correct = []
+
 	if (activeTask.incorrect) {
-		HCorrect = taskHLine.filter((item) => !(item[0] + '|' + item[1] in activeTask.incorrect))
-		KCorrect = taskKLine.filter((item) => !(item[0] + '|' + item[1] in activeTask.incorrect))
+		if (activeTask.kanji) {
+			correct = allKanji.filter((item) => !(item[0] + '|' + item[2] in activeTask.incorrect))
+		} else {
+			HCorrect = taskHLine.filter((item) => !(item[0] + '|' + item[1] in activeTask.incorrect))
+			KCorrect = taskKLine.filter((item) => !(item[0] + '|' + item[1] in activeTask.incorrect))
+		}
 	} else {
 		HCorrect = taskHLine
 		KCorrect = taskKLine
+		correct = allKanji
 	}
 </script>
 
@@ -45,18 +53,27 @@
 {#if totalCorrect > 0}
 	<h2 class="text-xl mt-2 font-semibold">Here's what you got correct:</h2>
 	<div class="block md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-		{#each HCorrect as [jp, ro]}
-			<div class="m-2 bg-highlight p-5 text-center rounded-lg">
-				<h1 class="text-4xl font-jp">{jp}</h1>
-				<h2 class="text-xl font-medium mt-1">{ro.split('|')[0]}</h2>
-			</div>
-		{/each}
-		{#each KCorrect as [jp, ro]}
-			<div class="m-2 bg-highlight p-5 text-center rounded-lg">
-				<h1 class="text-4xl font-jp">{jp}</h1>
-				<h2 class="text-xl font-medium mt-1">{ro.split('|')[0]}</h2>
-			</div>
-		{/each}
+		{#if !activeTask.kanji}
+			{#each HCorrect as [jp, ro]}
+				<div class="m-2 bg-highlight p-5 text-center rounded-lg">
+					<h1 class="text-4xl font-jp">{jp}</h1>
+					<h2 class="text-xl font-medium mt-1">{ro.split('|')[0]}</h2>
+				</div>
+			{/each}
+			{#each KCorrect as [jp, ro]}
+				<div class="m-2 bg-highlight p-5 text-center rounded-lg">
+					<h1 class="text-4xl font-jp">{jp}</h1>
+					<h2 class="text-xl font-medium mt-1">{ro.split('|')[0]}</h2>
+				</div>
+			{/each}
+		{:else}
+			{#each correct as [kanji, jp, ro, meaning]}
+				<div class="m-2 bg-highlight p-5 text-center rounded-lg">
+					<h1 class="text-4xl font-jp">{kanji}</h1>
+					<h2 class="text-xl font-medium mt-1">{ro.split('|')[0]}</h2>
+				</div>
+			{/each}
+		{/if}
 	</div>
 {:else}
 	<h2 class="text-xl mt-2 font-semibold">You didn't get any correct! Try harder next time!</h2>

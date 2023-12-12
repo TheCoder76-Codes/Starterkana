@@ -4,10 +4,17 @@
 	export let sTask
 	export let streaks
 	import './kanji-canvas'
-	import './ref-patterns'
 	import * as wanakana from 'wanakana'
 	import { onMount } from 'svelte'
 	import ViewResults from './ViewResults.svelte'
+
+	let moduletoImport = './ref-patterns'
+	if (activeTask.kanji) {
+		moduletoImport = './kanji-patterns'
+	}
+	;(async()=>{
+		await import(moduletoImport)
+	})()
 
 	let hiragana = {
 		a: [
@@ -361,8 +368,16 @@
 	})
 	taskKLine = taskKLine.filter((item) => typeof item == 'object')
 
-	let allArr = taskHLine.concat(taskKLine)
-	allArr.sort(() => Math.random() - 0.5)
+	let allArr
+	let allKanji = []
+	if (!activeTask.kanji) {
+		allArr = taskHLine.concat(taskKLine)
+		allArr.sort(() => Math.random() - 0.5)
+	} else {
+		allArr = activeTask.odkanji.concat(activeTask.oskanji)
+		allKanji = [...allArr]
+		allArr.sort(() => Math.random() - 0.5)
+	}
 	onMount(() => {
 		if (activeTask.answerIn == 1) {
 			KanjiCanvas.init('can')
@@ -418,18 +433,39 @@
 	let viewingResults = false
 	let jpIndex = 0
 	let hgOrKk = ''
+
+	let unitMapping = {
+		'dunit2': 'OD/Unit 2',
+		'dunit3': 'OD/Unit 3',
+		'dunit7': 'OD/Unit 7',
+		'sunit1': 'OS/Unit 1',
+		'sunit2': 'OS/Unit 2',
+		'sunit3': 'OS/Unit 3',
+		'sunit4': 'OS/Unit 4',
+		'sunit5': 'OS/Unit 5',
+		'sunit6': 'OS/Unit 6',
+		'sunit7': 'OS/Unit 7',
+		'sunit8': 'OS/Unit 8',
+		'sunit9': 'OS/Unit 9',
+		'sunit10': 'OS/Unit 10',
+		'sunit11': 'OS/Unit 11',
+		'sunit12': 'OS/Unit 12',
+	}
+
 	function allcompleted() {
 		finished = true
-		belts.forEach((item) => {
-			if (arrayContainsAll(beltsContain[item], activeTask.hiragana)) {
-				completedBeltsH.push(item)
-			}
-		})
-		belts.forEach((item) => {
-			if (arrayContainsAll(beltsContain[item], activeTask.katakana)) {
-				completedBeltsK.push(item)
-			}
-		})
+		if (!activeTask.kanji) {
+			belts.forEach((item) => {
+				if (arrayContainsAll(beltsContain[item], activeTask.hiragana)) {
+					completedBeltsH.push(item)
+				}
+			})
+			belts.forEach((item) => {
+				if (arrayContainsAll(beltsContain[item], activeTask.katakana)) {
+					completedBeltsK.push(item)
+				}
+			})
+		}
 
 		for (let key in activeTask.incorrect) {
 			totalIncorrect += activeTask.incorrect[key]
@@ -437,30 +473,45 @@
 		if (!totalIncorrect) totalIncorrect = 0
 		totalCorrect = totalCompleted - totalIncorrect
 		percentage = (totalCorrect / totalCompleted).toFixed(4) * 100
-		completedBeltsH.forEach((item, index) => {
-			if (index + 1 == completedBeltsH.length && completedBeltsH.length != 1) {
-				niceCompletedBeltsStrH += 'and ' + item + ' belts in Hiragana'
-			} else if (completedBeltsH.length == 1) {
-				niceCompletedBeltsStrH += item + ' belt in Hiragana'
-			} else {
-				niceCompletedBeltsStrH += item + ', '
+		if (!activeTask.kanji) {
+			completedBeltsH.forEach((item, index) => {
+				if (index + 1 == completedBeltsH.length && completedBeltsH.length != 1) {
+					niceCompletedBeltsStrH += 'and ' + item + ' belts in Hiragana'
+				} else if (completedBeltsH.length == 1) {
+					niceCompletedBeltsStrH += item + ' belt in Hiragana'
+				} else {
+					niceCompletedBeltsStrH += item + ', '
+				}
+			})
+			completedBeltsK.forEach((item, index) => {
+				if (index + 1 == completedBeltsK.length && completedBeltsK.length != 1) {
+					niceCompletedBeltsStrK += 'and ' + item + ' belts in Katakana'
+				} else if (completedBeltsK.length == 1) {
+					niceCompletedBeltsStrK += item + ' belt in Katakana'
+				} else {
+					niceCompletedBeltsStrK += item + ', '
+				}
+			})
+			if (niceCompletedBeltsStrH.length > 0 && niceCompletedBeltsStrK.length > 0) {
+				niceCompletedBeltsStr = niceCompletedBeltsStrH + ' and ' + niceCompletedBeltsStrK
+			} else if (niceCompletedBeltsStrH.length > 0 && niceCompletedBeltsStrK.length <= 0) {
+				niceCompletedBeltsStr = niceCompletedBeltsStrH
+			} else if (niceCompletedBeltsStrH.length <= 0 && niceCompletedBeltsStrK.length > 0) {
+				niceCompletedBeltsStr = niceCompletedBeltsStrK
 			}
-		})
-		completedBeltsK.forEach((item, index) => {
-			if (index + 1 == completedBeltsK.length && completedBeltsK.length != 1) {
-				niceCompletedBeltsStrK += 'and ' + item + ' belts in Katakana'
-			} else if (completedBeltsK.length == 1) {
-				niceCompletedBeltsStrK += item + ' belt in Katakana'
-			} else {
-				niceCompletedBeltsStrK += item + ', '
-			}
-		})
-		if (niceCompletedBeltsStrH.length > 0 && niceCompletedBeltsStrK.length > 0) {
-			niceCompletedBeltsStr = niceCompletedBeltsStrH + ' and ' + niceCompletedBeltsStrK
-		} else if (niceCompletedBeltsStrH.length > 0 && niceCompletedBeltsStrK.length <= 0) {
+		} else {
+			activeTask.ounits.forEach((item, index) => {
+				if (index + 1 == activeTask.ounits.length && activeTask.ounits.length != 1) {
+					niceCompletedBeltsStrH += 'and ' + unitMapping[item]
+				} else if (activeTask.ounits.length == 1) {
+					niceCompletedBeltsStrH += unitMapping[item]
+				} else if (index + 2 == activeTask.ounits.length) {
+					niceCompletedBeltsStrH += unitMapping[item] + ' '
+				} else {
+					niceCompletedBeltsStrH += unitMapping[item] + ', '
+				}
+			})
 			niceCompletedBeltsStr = niceCompletedBeltsStrH
-		} else if (niceCompletedBeltsStrH.length <= 0 && niceCompletedBeltsStrK.length > 0) {
-			niceCompletedBeltsStr = niceCompletedBeltsStrK
 		}
 
 		if (typeof userData.points == 'string') {
@@ -468,9 +519,11 @@
 		}
 
 		userData.points += parseInt((countingCorrect / 2).toFixed(0))
-		if (completedBeltsK.length > 4 || completedBeltsH.length > 4) userData.points += 10
-		if (completedBeltsK.length > 6 || completedBeltsH.length > 6) userData.points += 10
-		if (completedBeltsK.length > 8 || completedBeltsH.length > 8) userData.points += 10
+		if (!activeTask.kanji) {
+			if (completedBeltsK.length > 4 || completedBeltsH.length > 4) userData.points += 10
+			if (completedBeltsK.length > 6 || completedBeltsH.length > 6) userData.points += 10
+			if (completedBeltsK.length > 8 || completedBeltsH.length > 8) userData.points += 10
+		}
 		if (userData.cookies) {
 			localStorage.setItem('userData', JSON.stringify(userData))
 		}
@@ -489,14 +542,17 @@
 
 	if (activeTask.answerIn == 1) {
 		nudge = `<p class="text-fade">Hint: Click on a character once your done writing.</p>`
-		if (wanakana.isHiragana(allArr[jpIndex][0])) {
-			hgOrKk = 'Hiragana'
-		} else {
-			hgOrKk = 'Katakana'
-		}
+		hgOrKk = wanakana.isHiragana(allArr[jpIndex][0]) ? 'Hiragana' : activeTask.kanji ? 'Kanji' : 'Katakana'
 	}
 	function handleSubmit(jpI = null) {
-		let [jp, ro] = allArr[index]
+		let jp, ro
+		if (activeTask.kanji) {
+			jp = allArr[index][0]
+			ro = allArr[index][2]
+		} else {
+			jp = allArr[index][0]
+			ro = allArr[index][1]
+		}
 		if (!jpI && input.value.length <= 0) {
 			nudge = `<p class="text-incorrect">Please put in a response!</p>`
 			return
@@ -626,6 +682,7 @@
 		bind:percentage
 		bind:sTask
 		bind:countingCorrect
+		bind:allKanji
 	/>
 {:else if activeTask.answerIn == 0}
 	<div class="grid md:p-20 place-content-center w-full h-full overflow-hidden">
@@ -658,7 +715,7 @@
 	<div class="h-[calc(40vh)] w-full text-center mt-10 md:mt-20 flex flex-col place-content-between">
 		<div>
 			<h1 class="text-6xl font-semibold">
-				{allArr[index][1].split('|')[0]}
+				{activeTask.kanji ? allArr[index][2].split('|')[0] : allArr[index][1].split('|')[0]}
 			</h1>
 		</div>
 

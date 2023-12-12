@@ -4,10 +4,18 @@
 	export let sTask
 	export let streaks
 	import './kanji-canvas'
-	import './ref-patterns'
 	import * as wanakana from 'wanakana'
 	import { onMount } from 'svelte'
 	import ViewResults from './ViewResults.svelte'
+
+	let moduletoImport = 'patterns-ref'
+	if (activeTask.kanji) {
+		moduletoImport = 'patterns-kanji'
+	}
+	;(async()=>{
+		await import(`./refpatterns/${moduletoImport}.js`)
+	})()
+	console.log(moduletoImport, activeTask)
 
 	let hiragana = {
 		a: [
@@ -382,12 +390,20 @@
 	})
 	taskKLine = taskKLine.filter((item) => typeof item == 'object')
 
-	let allArr = taskHLine.concat(taskKLine)
-	allArr.sort(() => Math.random() - 0.5)
+	let allArr
+	let allKanji = []
+	if (!activeTask.kanji) {
+		allArr = taskHLine.concat(taskKLine)
+		allArr.sort(() => Math.random() - 0.5)
+	} else {
+		allArr = activeTask.odkanji.concat(activeTask.oskanji)
+		allKanji = [...allArr]
+		allArr.sort(() => Math.random() - 0.5)
+	}
 	onMount(() => {
-		if (activeTask.answerIn == 1) {
+		if (activeTask.answerIn == 1) { // 1 is kanji and 1 is japanese, 0 is romaji
 			KanjiCanvas.init('can')
-			document.getElementById(allArr[jpIndex][0]).style.transform = 'scale(1.05)'
+			if (!activeTask.kanji) document.getElementById(allArr[jpIndex][0]).style.transform = 'scale(1.05)' // first one
 		}
 	})
 	let charactersArr = []
@@ -397,7 +413,9 @@
 		characters = characters.split(' ').filter((i) => i != '')
 		charactersArr = characters
 	}
-
+	console.log(allArr)
+	// haystack is the larger array
+	// testing to see if all the items in the needle array are in the haystack array
 	function arrayContainsAll(needle, haystack) {
 		for (let i = 0; i < needle.length; i++) {
 			if (haystack.indexOf(needle[i]) === -1) {
@@ -426,11 +444,8 @@
 	let jpIndex = 0
 	let hgOrKk = ''
 
-	if (wanakana.isHiragana(allArr[jpIndex][0])) {
-		hgOrKk = 'Hiragana'
-	} else {
-		hgOrKk = 'Katakana'
-	}
+	hgOrKk = wanakana.isHiragana(allArr[jpIndex][0]) ? 'Hiragana' : activeTask.kanji ? 'Kanji' : 'Katakana'
+
 
 	let ferror = null
 
@@ -474,6 +489,23 @@
 			countdownInt = true
 		}
 	}
+	let unitMapping = {
+		'dunit2': 'OD/Unit 2',
+		'dunit3': 'OD/Unit 3',
+		'dunit7': 'OD/Unit 7',
+		'sunit1': 'OS/Unit 1',
+		'sunit2': 'OS/Unit 2',
+		'sunit3': 'OS/Unit 3',
+		'sunit4': 'OS/Unit 4',
+		'sunit5': 'OS/Unit 5',
+		'sunit6': 'OS/Unit 6',
+		'sunit7': 'OS/Unit 7',
+		'sunit8': 'OS/Unit 8',
+		'sunit9': 'OS/Unit 9',
+		'sunit10': 'OS/Unit 10',
+		'sunit11': 'OS/Unit 11',
+		'sunit12': 'OS/Unit 12',
+	}
 	function allcompleted() {
 		if (totalCompleted != allArr.length) {
 			ferror = 'Please complete all the questions!'
@@ -488,16 +520,18 @@
 			countdownInt = false
 			clearInterval(fs)
 		}
-		belts.forEach((item) => {
-			if (arrayContainsAll(beltsContain[item], activeTask.hiragana)) {
-				completedBeltsH.push(item)
-			}
-		})
-		belts.forEach((item) => {
-			if (arrayContainsAll(beltsContain[item], activeTask.katakana)) {
-				completedBeltsK.push(item)
-			}
-		})
+		if (!activeTask.kanji) {
+			belts.forEach((item) => {
+				if (arrayContainsAll(beltsContain[item], activeTask.hiragana)) {
+					completedBeltsH.push(item)
+				}
+			})
+			belts.forEach((item) => {
+				if (arrayContainsAll(beltsContain[item], activeTask.katakana)) {
+					completedBeltsK.push(item)
+				}
+			})
+		}
 
 		for (let key in activeTask.incorrect) {
 			totalIncorrect += activeTask.incorrect[key]
@@ -505,33 +539,48 @@
 		if (!totalIncorrect) totalIncorrect = 0
 		totalCorrect = totalCompleted - totalIncorrect
 		percentage = (totalCorrect / totalCompleted).toFixed(4) * 100
-		completedBeltsH.forEach((item, index) => {
-			if (index + 1 == completedBeltsH.length && completedBeltsH.length != 1) {
-				niceCompletedBeltsStrH += 'and ' + item + ' belts in Hiragana'
-			} else if (completedBeltsH.length == 1) {
-				niceCompletedBeltsStrH += item + ' belt in Hiragana'
-			} else {
-				niceCompletedBeltsStrH += item + ', '
+		if (!activeTask.kanji) {
+			completedBeltsH.forEach((item, index) => {
+				if (index + 1 == completedBeltsH.length && completedBeltsH.length != 1) {
+					niceCompletedBeltsStrH += 'and ' + item + ' belts in Hiragana'
+				} else if (completedBeltsH.length == 1) {
+					niceCompletedBeltsStrH += item + ' belt in Hiragana'
+				} else {
+					niceCompletedBeltsStrH += item + ', '
+				}
+			})
+			completedBeltsK.forEach((item, index) => {
+				if (index + 1 == completedBeltsK.length && completedBeltsK.length != 1) {
+					niceCompletedBeltsStrK += 'and ' + item + ' belts in Katakana'
+				} else if (completedBeltsK.length == 1) {
+					niceCompletedBeltsStrK += item + ' belt in Katakana'
+				} else {
+					niceCompletedBeltsStrK += item + ', '
+				}
+			})
+			if (niceCompletedBeltsStrH.length > 0 && niceCompletedBeltsStrK.length > 0) {
+				niceCompletedBeltsStr = niceCompletedBeltsStrH + ' and ' + niceCompletedBeltsStrK
+			} else if (niceCompletedBeltsStrH.length > 0 && niceCompletedBeltsStrK.length <= 0) {
+				niceCompletedBeltsStr = niceCompletedBeltsStrH
+			} else if (niceCompletedBeltsStrH.length <= 0 && niceCompletedBeltsStrK.length > 0) {
+				niceCompletedBeltsStr = niceCompletedBeltsStrK
 			}
-		})
-		completedBeltsK.forEach((item, index) => {
-			if (index + 1 == completedBeltsK.length && completedBeltsK.length != 1) {
-				niceCompletedBeltsStrK += 'and ' + item + ' belts in Katakana'
-			} else if (completedBeltsK.length == 1) {
-				niceCompletedBeltsStrK += item + ' belt in Katakana'
-			} else {
-				niceCompletedBeltsStrK += item + ', '
-			}
-		})
-		if (niceCompletedBeltsStrH.length > 0 && niceCompletedBeltsStrK.length > 0) {
-			niceCompletedBeltsStr = niceCompletedBeltsStrH + ' and ' + niceCompletedBeltsStrK
-		} else if (niceCompletedBeltsStrH.length > 0 && niceCompletedBeltsStrK.length <= 0) {
+		} else {
+			activeTask.ounits.forEach((item, index) => {
+				if (index + 1 == activeTask.ounits.length && activeTask.ounits.length != 1) {
+					niceCompletedBeltsStrH += 'and ' + unitMapping[item]
+				} else if (activeTask.ounits.length == 1) {
+					niceCompletedBeltsStrH += unitMapping[item]
+				} else if (index + 2 == activeTask.ounits.length) {
+					niceCompletedBeltsStrH += unitMapping[item] + ' '
+				} else {
+					niceCompletedBeltsStrH += unitMapping[item] + ', '
+				}
+			})
 			niceCompletedBeltsStr = niceCompletedBeltsStrH
-		} else if (niceCompletedBeltsStrH.length <= 0 && niceCompletedBeltsStrK.length > 0) {
-			niceCompletedBeltsStr = niceCompletedBeltsStrK
 		}
 
-		if (activeTask.type == 3) {
+		if (activeTask.type == 3 && !activeTask.kanji) {
 			let currentHBelt
 			let currentKBelt
 
@@ -562,9 +611,11 @@
 		}
 
 		userData.points += totalCorrect
-		if (completedBeltsK.length > 4 || completedBeltsH.length > 4) userData.points += 10
-		if (completedBeltsK.length > 6 || completedBeltsH.length > 6) userData.points += 10
-		if (completedBeltsK.length > 8 || completedBeltsH.length > 8) userData.points += 10
+		if (!activeTask.kanji) {
+			if (completedBeltsK.length > 4 || completedBeltsH.length > 4) userData.points += 10
+			if (completedBeltsK.length > 6 || completedBeltsH.length > 6) userData.points += 10
+			if (completedBeltsK.length > 8 || completedBeltsH.length > 8) userData.points += 10
+		}
 		if (userData.cookies) {
 			localStorage.setItem('userData', JSON.stringify(userData))
 		}
@@ -581,7 +632,7 @@
 		)
 	}
 
-	function handleSubmit(jp, ro = null) {
+	function handleSubmit(jp, ro = null) { // in kanji mode, jp = kanji, ro = reading (e.g. jp = 時 and ro = 'ji|toki')
 		let input
 		if (ro) input = document.getElementById(jp)
 		if (ro && input.value.length <= 0) return
@@ -593,7 +644,12 @@
 				input.parentElement.classList.add('bg-correct')
 				input.parentElement.style.transform = 'scale(1.00)'
 				input.disabled = true
-				let index = indexOf(allArr, [jp, ro], arraysIdentical)
+				let index = -1
+				if (!activeTask.kanji) {
+					index = indexOf(allArr, [jp, ro], arraysIdentical)
+				} else {
+					index = allArr.findIndex((item) => item[0] == jp)
+				}
 				if (index > -1 && index + 1 != allArr.length) {
 					document.getElementById(allArr[index + 1][0]).focus()
 				} else {
@@ -616,7 +672,7 @@
 				}
 			}
 		} else {
-			let item = allArr[jpIndex] // ['あ', 'a']
+			let item = allArr[jpIndex] // ['あ', 'a'] or ['時', 'じ|とき', 'ji|toki', 'time|hour']
 			if (jp == item[0]) {
 				// correct
 				// reset canvas, recognized characters and add to jpIndex
@@ -629,11 +685,7 @@
 				charactersArr = []
 				if (allArr[jpIndex + 1]) {
 					jpIndex++
-					if (wanakana.isHiragana(allArr[jpIndex][0])) {
-						hgOrKk = 'Hiragana'
-					} else {
-						hgOrKk = 'Katakana'
-					}
+					hgOrKk = wanakana.isHiragana(allArr[jpIndex][0]) ? 'Hiragana' : activeTask.kanji ? 'Kanji' : 'Katakana'
 					document.getElementById(allArr[jpIndex][0]).style.transform = 'scale(1.05)'
 				} else {
 					document.getElementById('fbtn').focus()
@@ -712,6 +764,7 @@
 		bind:totalCompleted
 		bind:percentage
 		bind:sTask
+		bind:allKanji
 	/>
 {:else}
 	{#if testErr.length > 0}
@@ -727,30 +780,57 @@
 	{/if}
 	<div class="block md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6" style="margin-bottom: {activeTask.answerIn == 1 ? '40vh' : '0'}">
 		{#if activeTask.answerIn == 0}
-			{#each allArr as [jp, ro]}
-				<form
-					class="bg-highlight p-5 rounded-lg m-2 text-center transition-transform ease-in-out duration-300 focus:scale-105"
-					on:submit|preventDefault={() => handleSubmit(jp, ro)}
-				>
-					<h1 class="text-6xl text-white font-jp">{jp}</h1>
-					<input
-						type="text"
-						placeholder="Answer"
-						class="text-lg rounded-lg outline-none p-2 mt-5 w-full hover:disabled:cursor-not-allowed"
-						autocomplete="off"
-						autocorrect="off"
-						autocapitalize="off"
-						spellcheck="false"
-						id={jp}
-						on:focus={() => {
-							document.getElementById(jp).parentElement.style.transform = 'scale(1.05)'
-						}}
-						on:blur={() => {
-							document.getElementById(jp).parentElement.style.transform = 'scale(1.00)'
-						}}
-					/>
-				</form>
-			{/each}
+			{#if activeTask.kanji}
+				{#each allArr as [kanji, jp, ro, meaning]}
+					<form
+						class="bg-highlight p-5 rounded-lg m-2 text-center transition-transform ease-in-out duration-300 focus:scale-105"
+						on:submit|preventDefault={() => handleSubmit(kanji, ro)}
+					>
+						<h1 class="text-6xl text-white font-jp">{kanji}</h1>
+						<input
+							type="text"
+							placeholder="Answer"
+							class="text-lg rounded-lg outline-none p-2 mt-5 w-full hover:disabled:cursor-not-allowed"
+							autocomplete="off"
+							autocorrect="off"
+							autocapitalize="off"
+							spellcheck="false"
+							id={kanji}
+							on:focus={() => {
+								document.getElementById(kanji).parentElement.style.transform = 'scale(1.05)'
+							}}
+							on:blur={() => {
+								document.getElementById(kanji).parentElement.style.transform = 'scale(1.00)'
+							}}
+						/>
+					</form>
+				{/each}
+			{:else}
+				{#each allArr as [jp, ro]}
+					<form
+						class="bg-highlight p-5 rounded-lg m-2 text-center transition-transform ease-in-out duration-300 focus:scale-105"
+						on:submit|preventDefault={() => handleSubmit(jp, ro)}
+					>
+						<h1 class="text-6xl text-white font-jp">{jp}</h1>
+						<input
+							type="text"
+							placeholder="Answer"
+							class="text-lg rounded-lg outline-none p-2 mt-5 w-full hover:disabled:cursor-not-allowed"
+							autocomplete="off"
+							autocorrect="off"
+							autocapitalize="off"
+							spellcheck="false"
+							id={jp}
+							on:focus={() => {
+								document.getElementById(jp).parentElement.style.transform = 'scale(1.05)'
+							}}
+							on:blur={() => {
+								document.getElementById(jp).parentElement.style.transform = 'scale(1.00)'
+							}}
+						/>
+					</form>
+				{/each}
+			{/if}
 		{:else if activeTask.answerIn == 1}
 				{#each allArr as [jp, ro]}
 					<form
