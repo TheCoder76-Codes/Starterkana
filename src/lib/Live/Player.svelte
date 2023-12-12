@@ -57,6 +57,7 @@
 			<LiveSpeedSkills bind:userData bind:activeTask bind:game {socket} />
 		{:else if activeTask.type == 3}
 			<h1 class="text-2xl text-red-500">Error! This is not not implemented yet.</h1>
+			<p class="text-italic text-gray-500">How did we get here?</p>
 		{/if}
 	</main>
 	<!-- WOrk -->

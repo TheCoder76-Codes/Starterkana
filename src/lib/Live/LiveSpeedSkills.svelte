@@ -4,9 +4,16 @@
 	export let socket
 	export let game
 	import './kanji-canvas'
-	import './ref-patterns'
 	import * as wanakana from 'wanakana'
 	import { onMount } from 'svelte'
+
+	let moduletoImport = 'patterns-ref'
+	if (activeTask.kanji) {
+		moduletoImport = 'patterns-kanji'
+	}
+	;(async()=>{
+		await import(`./refpatterns/${moduletoImport}.js`)
+	})()
 
 	let hiragana = {
 		a: [
@@ -360,8 +367,16 @@
 	})
 	taskKLine = taskKLine.filter((item) => typeof item == 'object')
 
-	let allArr = taskHLine.concat(taskKLine)
-	allArr.sort(() => Math.random() - 0.5)
+	let allArr
+	let allKanji = []
+	if (!activeTask.kanji) {
+		allArr = taskHLine.concat(taskKLine)
+		allArr.sort(() => Math.random() - 0.5)
+	} else {
+		allArr = activeTask.odkanji.concat(activeTask.oskanji)
+		allKanji = [...allArr]
+		allArr.sort(() => Math.random() - 0.5)
+	}
 	onMount(() => {
 		if (activeTask.answerIn == 1) {
 			KanjiCanvas.init('can')
@@ -416,18 +431,39 @@
 
 	let totalTime
 
+	let unitMapping = {
+		'dunit2': 'OD/Unit 2',
+		'dunit3': 'OD/Unit 3',
+		'dunit7': 'OD/Unit 7',
+		'sunit1': 'OS/Unit 1',
+		'sunit2': 'OS/Unit 2',
+		'sunit3': 'OS/Unit 3',
+		'sunit4': 'OS/Unit 4',
+		'sunit5': 'OS/Unit 5',
+		'sunit6': 'OS/Unit 6',
+		'sunit7': 'OS/Unit 7',
+		'sunit8': 'OS/Unit 8',
+		'sunit9': 'OS/Unit 9',
+		'sunit10': 'OS/Unit 10',
+		'sunit11': 'OS/Unit 11',
+		'sunit12': 'OS/Unit 12',
+	}
+
 	function allcompleted() {
 		finished = true
-		belts.forEach((item) => {
-			if (arrayContainsAll(beltsContain[item], activeTask.hiragana)) {
-				completedBeltsH.push(item)
-			}
-		})
-		belts.forEach((item) => {
-			if (arrayContainsAll(beltsContain[item], activeTask.katakana)) {
-				completedBeltsK.push(item)
-			}
-		})
+
+		if (!activeTask.kanji) {
+			belts.forEach((item) => {
+				if (arrayContainsAll(beltsContain[item], activeTask.hiragana)) {
+					completedBeltsH.push(item)
+				}
+			})
+			belts.forEach((item) => {
+				if (arrayContainsAll(beltsContain[item], activeTask.katakana)) {
+					completedBeltsK.push(item)
+				}
+			})
+		}
 
 		for (let key in activeTask.incorrect) {
 			totalIncorrect += activeTask.incorrect[key]
@@ -441,9 +477,11 @@
 		}
 
 		userData.points += parseInt((countingCorrect / 2).toFixed(0))
-		if (completedBeltsK.length > 4 || completedBeltsH.length > 4) userData.points += 10
-		if (completedBeltsK.length > 6 || completedBeltsH.length > 6) userData.points += 10
-		if (completedBeltsK.length > 8 || completedBeltsH.length > 8) userData.points += 10
+		if (!activeTask.kanji) {
+			if (completedBeltsK.length > 4 || completedBeltsH.length > 4) userData.points += 10
+			if (completedBeltsK.length > 6 || completedBeltsH.length > 6) userData.points += 10
+			if (completedBeltsK.length > 8 || completedBeltsH.length > 8) userData.points += 10
+		}
 		if (userData.cookies) {
 			localStorage.setItem('userData', JSON.stringify(userData))
 		}
@@ -466,7 +504,14 @@
 		}
 	}
 	function handleSubmit(jpI = null) {
-		let [jp, ro] = allArr[index]
+		let jp, ro
+		if (activeTask.kanji) {
+			jp = allArr[index][0]
+			ro = allArr[index][2]
+		} else {
+			jp = allArr[index][0]
+			ro = allArr[index][1]
+		}
 		if (!jpI && input.value.length <= 0) {
 			nudge = `<p class="text-incorrect">Please put in a response!</p>`
 			return
@@ -486,7 +531,7 @@
 			} else {
 				if (activeTask.incorrect) {
 					if (activeTask.incorrect[jp + '|' + ro]) {
-						// activeTask.incorrect[jp + '|' + ro]++ // Removed due to negative percentages
+						// activeTask.incorrect[jp + '|' + ro]++
 					} else {
 						activeTask.incorrect[jp + '|' + ro] = 1
 					}
@@ -531,7 +576,7 @@
 				charactersArr = []
 				if (activeTask.incorrect) {
 					if (activeTask.incorrect[jp + '|' + ro]) {
-						activeTask.incorrect[jp + '|' + ro]++
+						// activeTask.incorrect[jp + '|' + ro]++
 					} else {
 						activeTask.incorrect[jp + '|' + ro] = 1
 					}
@@ -542,6 +587,10 @@
 			}
 		}
 	}
+
+	document.body.addEventListener('touchend', function () {
+		kcan()
+	})
 </script>
 
 {#if finished}
@@ -590,7 +639,7 @@
 	<div class="h-[calc(40vh)] w-full text-center mt-10 md:mt-20 flex flex-col place-content-between">
 		<div>
 			<h1 class="text-6xl font-semibold">
-				{allArr[index][1].split('|')[0]}
+				{activeTask.kanji ? allArr[index][2].split('|')[0] : allArr[index][1].split('|')[0]}
 			</h1>
 		</div>
 
@@ -613,7 +662,6 @@
 					height="256px"
 					id="can"
 					on:click={kcan}
-					on:touchend|preventDefault={kcan}
 					class="bg-white rounded-lg m-2.5"
 				/>
 				<div>

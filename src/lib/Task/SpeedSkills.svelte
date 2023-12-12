@@ -8,12 +8,12 @@
 	import { onMount } from 'svelte'
 	import ViewResults from './ViewResults.svelte'
 
-	let moduletoImport = './ref-patterns'
+	let moduletoImport = 'patterns-ref'
 	if (activeTask.kanji) {
-		moduletoImport = './kanji-patterns'
+		moduletoImport = 'patterns-kanji'
 	}
 	;(async()=>{
-		await import(moduletoImport)
+		await import(`./refpatterns/${moduletoImport}.js`)
 	})()
 
 	let hiragana = {

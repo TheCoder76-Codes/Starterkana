@@ -8,20 +8,24 @@
 	let activeTask = {
 		hiragana: [],
 		katakana: [],
+		odkanji: [],
+		oskanji: [],
 		title: '',
 		type: 0, // 0 QUIZ 1 LEARN 2 SPEED 3 TEST
 		answerIn: 0, // 0 ROMANJI 1 JAPENESE
-		live: true,
+		kanji: false, // FALSE kana TRUE kanji (CANT BE BOTH)
 	}
 
 	function backToCode() {
 		activeTask = {
 			hiragana: [],
 			katakana: [],
+			odkanji: [],
+			oskanji: [],
 			title: '',
 			type: 0, // 0 QUIZ 1 LEARN 2 SPEED 3 TEST
 			answerIn: 0, // 0 ROMANJI 1 JAPENESE
-			live: true,
+			kanji: false, // FALSE kana TRUE kanji (CANT BE BOTH)
 		}
 		startingLiveTask = false
 		startingTask = false

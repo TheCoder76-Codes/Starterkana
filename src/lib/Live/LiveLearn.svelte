@@ -4,9 +4,16 @@
 	export let socket
 	export let game
 	import './kanji-canvas'
-	import './ref-patterns'
 	import * as wanakana from 'wanakana'
 	import { onMount } from 'svelte'
+
+	let moduletoImport = 'patterns-ref'
+	if (activeTask.kanji) {
+		moduletoImport = 'patterns-kanji'
+	}
+	;(async()=>{
+		await import(`./refpatterns/${moduletoImport}.js`)
+	})()
 
 	let hiragana = {
 		a: [
@@ -362,7 +369,14 @@
 	})
 	taskKLine = taskKLine.filter((item) => typeof item == 'object')
 
-	let allArr = taskHLine.concat(taskKLine)
+	let allArr
+	let allKanji = []
+	if (!activeTask.kanji) {
+		allArr = taskHLine.concat(taskKLine)
+	} else {
+		allArr = activeTask.odkanji.concat(activeTask.oskanji)
+		allKanji = [...allArr]
+	}
 	onMount(() => {
 		if (activeTask.answerIn == 1) {
 			KanjiCanvas.init('can')
@@ -402,27 +416,42 @@
 	let nudge = `<p class="text-fade">Hint: Press 'Enter' once your done typing</p>`
 	let jpIndex = 0
 	let hgOrKk = ''
-	if (wanakana.isHiragana(allArr[jpIndex][0])) {
-		hgOrKk = 'Hiragana'
-	} else {
-		hgOrKk = 'Katakana'
+	hgOrKk = wanakana.isHiragana(allArr[jpIndex][0]) ? 'Hiragana' : activeTask.kanji ? 'Kanji' : 'Katakana'
+
+	let unitMapping = {
+		'dunit2': 'OD/Unit 2',
+		'dunit3': 'OD/Unit 3',
+		'dunit7': 'OD/Unit 7',
+		'sunit1': 'OS/Unit 1',
+		'sunit2': 'OS/Unit 2',
+		'sunit3': 'OS/Unit 3',
+		'sunit4': 'OS/Unit 4',
+		'sunit5': 'OS/Unit 5',
+		'sunit6': 'OS/Unit 6',
+		'sunit7': 'OS/Unit 7',
+		'sunit8': 'OS/Unit 8',
+		'sunit9': 'OS/Unit 9',
+		'sunit10': 'OS/Unit 10',
+		'sunit11': 'OS/Unit 11',
+		'sunit12': 'OS/Unit 12',
 	}
 
 	let totalTime
 	function allcompleted() {
 		totalTime = ((Date.now() - startingTime) / 1000).toFixed(2)
 		finished = true
-		belts.forEach((item) => {
-			if (arrayContainsAll(beltsContain[item], activeTask.hiragana)) {
-				completedBeltsH.push(item)
-			}
-		})
-		belts.forEach((item) => {
-			if (arrayContainsAll(beltsContain[item], activeTask.katakana)) {
-				completedBeltsK.push(item)
-			}
-		})
-
+		if (!activeTask.kanji) {
+			belts.forEach((item) => {
+				if (arrayContainsAll(beltsContain[item], activeTask.hiragana)) {
+					completedBeltsH.push(item)
+				}
+			})
+			belts.forEach((item) => {
+				if (arrayContainsAll(beltsContain[item], activeTask.katakana)) {
+					completedBeltsK.push(item)
+				}
+			})
+		}
 		for (let key in activeTask.incorrect) {
 			totalIncorrect += activeTask.incorrect[key]
 		}
@@ -435,9 +464,11 @@
 		}
 
 		userData.points += totalCorrect
-		if (completedBeltsK.length > 4 || completedBeltsH.length > 4) userData.points += 10
-		if (completedBeltsK.length > 6 || completedBeltsH.length > 6) userData.points += 10
-		if (completedBeltsK.length > 8 || completedBeltsH.length > 8) userData.points += 10
+		if (!activeTask.kanji) {
+			if (completedBeltsK.length > 4 || completedBeltsH.length > 4) userData.points += 10
+			if (completedBeltsK.length > 6 || completedBeltsH.length > 6) userData.points += 10
+			if (completedBeltsK.length > 8 || completedBeltsH.length > 8) userData.points += 10
+		}
 		if (userData.cookies) {
 			localStorage.setItem('userData', JSON.stringify(userData))
 		}
@@ -455,7 +486,14 @@
 	}
 
 	function handleSubmit(jpI = null) {
-		let [jp, ro] = allArr[index]
+		let jp, ro
+		if (activeTask.kanji) {
+			jp = allArr[index][0]
+			ro = allArr[index][2]
+		} else {
+			jp = allArr[index][0]
+			ro = allArr[index][1]
+		}
 		if (!jpI && input.value.length <= 0) {
 			nudge = `<p class="text-incorrect">Please put in a response!</p>`
 			return
@@ -475,14 +513,14 @@
 					input.value = ''
 					input.focus()
 					nudge = `<p class="text-fade">Hint: Press 'Enter' once your done typing</p>`
-				}, 2000)
+				}, 2500)
 			} else {
 				nudge = `<p class="text-incorrect">Incorrect! Try again!</p>`
 				input.value = ''
 				input.focus()
 				if (activeTask.incorrect) {
 					if (activeTask.incorrect[jp + '|' + ro]) {
-						// activeTask.incorrect[jp + '|' + ro]++ // Removed due to negative percentages
+						// activeTask.incorrect[jp + '|' + ro]++
 					} else {
 						activeTask.incorrect[jp + '|' + ro] = 1
 					}
@@ -492,7 +530,7 @@
 				}
 			}
 		} else {
-			let item = allArr[jpIndex] // ['あ', 'a']
+			let item = allArr[jpIndex] // ['あ', 'a'] or ['時', 'じ|とき', 'ji|toki', 'time|hour']
 			if (jpI == item[0]) {
 				// correct
 				// reset canvas, recognized characters and add to jpIndex
@@ -510,11 +548,7 @@
 					charactersArr = []
 					inTimeout = false
 					jpIndex++
-					if (wanakana.isHiragana(allArr[jpIndex][0])) {
-						hgOrKk = 'Hiragana'
-					} else {
-						hgOrKk = 'Katakana'
-					}
+					hgOrKk = wanakana.isHiragana(allArr[jpIndex][0]) ? 'Hiragana' : activeTask.kanji ? 'Kanji' : 'Katakana'
 				}, 2500)
 			} else {
 				// incorrect
@@ -523,7 +557,7 @@
 				charactersArr = []
 				if (activeTask.incorrect) {
 					if (activeTask.incorrect[jp + '|' + ro]) {
-						// activeTask.incorrect[jp + '|' + ro]++ // Removed due to negative percentages.
+						// activeTask.incorrect[jp + '|' + ro]++
 					} else {
 						activeTask.incorrect[jp + '|' + ro] = 1
 					}
@@ -534,6 +568,10 @@
 			}
 		}
 	}
+
+	document.body.addEventListener('touchend', function () {
+		kcan()
+	})
 </script>
 
 {#if finished}
@@ -553,29 +591,49 @@
 {:else if activeTask.answerIn == 0}
 	<div class="grid md:p-20 place-content-center w-full h-full overflow-hidden">
 		<div class="text-center overflow-y-hidden">
-			<h1 class="text-6xl font-semibold mb-10 md:mb-24 lg:mb-64 xl:mb-80">
-				This is '{allArr[index][1].split('|')[0]}' <span class="font-jp">{allArr[index][0]}</span>
-			</h1>
-			<form on:submit|preventDefault={handleSubmit} class="mt-10 md:mt-24 lg:mt-64 xl:mt-80">
-				{@html nudge}
-				<input
-					type="text"
-					bind:this={input}
-					class="m-2 text-lg border rounded-lg border-gray-300 hover:border-gray-400 focus:border-gray-500 outline-none p-2 disabled:hover:cursor-not-allowed"
-					placeholder={'Type in ' + allArr[index][1].split('|')[0]}
-					id={allArr[index][0]}
-					autocomplete="off"
-					autocorrect="off"
-					autocapitalize="off"
-					spellcheck="false"
-				/>
-			</form>
+			{#if activeTask.kanji}
+				<h1 class="text-6xl font-semibold mb-10 md:mb-24 lg:mb-64 xl:mb-80">
+					This is '{allArr[index][2].split('|')[0]}' <span class="font-jp">{allArr[index][0]}</span>
+				</h1>
+				<form on:submit|preventDefault={handleSubmit} class="mt-10 md:mt-24 lg:mt-64 xl:mt-80">
+					{@html nudge}
+					<input
+						type="text"
+						bind:this={input}
+						class="m-2 text-lg border rounded-lg border-gray-300 hover:border-gray-400 focus:border-gray-500 outline-none p-2 disabled:hover:cursor-not-allowed"
+						placeholder={'Type in ' + allArr[index][2].split('|')[0]}
+						id={allArr[index][0]}
+						autocomplete="off"
+						autocorrect="off"
+						autocapitalize="off"
+						spellcheck="false"
+					/>
+				</form>
+			{:else}
+				<h1 class="text-6xl font-semibold mb-10 md:mb-24 lg:mb-64 xl:mb-80">
+					This is '{allArr[index][1].split('|')[0]}' <span class="font-jp">{allArr[index][0]}</span>
+				</h1>
+				<form on:submit|preventDefault={handleSubmit} class="mt-10 md:mt-24 lg:mt-64 xl:mt-80">
+					{@html nudge}
+					<input
+						type="text"
+						bind:this={input}
+						class="m-2 text-lg border rounded-lg border-gray-300 hover:border-gray-400 focus:border-gray-500 outline-none p-2 disabled:hover:cursor-not-allowed"
+						placeholder={'Type in ' + allArr[index][1].split('|')[0]}
+						id={allArr[index][0]}
+						autocomplete="off"
+						autocorrect="off"
+						autocapitalize="off"
+						spellcheck="false"
+					/>
+				</form>
+			{/if}
 		</div>
 	</div>
 {:else if activeTask.answerIn == 1}
 	<div class="h-full w-full text-center mt-10 md:mt-20">
 		<h1 class="text-6xl font-semibold">
-			This is '{allArr[index][1].split('|')[0]}' <span class="font-jp">{allArr[index][0]}</span>
+			This is '{activeTask.kanji ? allArr[index][2].split('|')[0] : allArr[index][1].split('|')[0]}' <span class="font-jp">{allArr[index][0]}</span>
 		</h1>
 		{@html nudge}
 	</div>
@@ -589,7 +647,6 @@
 					height="256px"
 					id="can"
 					on:click={kcan}
-					on:touchend|preventDefault={kcan}
 					class="bg-white rounded-lg m-2.5"
 				/>
 				<div>

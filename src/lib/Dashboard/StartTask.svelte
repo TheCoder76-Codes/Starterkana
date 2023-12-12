@@ -569,7 +569,6 @@
 			['話', 'はな|はなし|ワ', 'hana|hanashi|wa', 'tale|talk|to talk|to speak|speak'],
 		]
 	}
-	$: console.log(activeTask.odkanji, activeTask.oskanji)
 </script>
 
 {#if inTask}

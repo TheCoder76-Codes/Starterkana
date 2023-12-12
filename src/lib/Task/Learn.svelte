@@ -8,12 +8,12 @@
 	import { onMount } from 'svelte'
 	import ViewResults from './ViewResults.svelte'
 
-	let moduletoImport = './ref-patterns'
+	let moduletoImport = 'patterns-ref'
 	if (activeTask.kanji) {
-		moduletoImport = './kanji-patterns'
+		moduletoImport = 'patterns-kanji'
 	}
 	;(async()=>{
-		await import(moduletoImport)
+		await import(`./refpatterns/${moduletoImport}.js`)
 	})()
 	console.log(moduletoImport, activeTask)
 
@@ -373,11 +373,9 @@
 	let allKanji = []
 	if (!activeTask.kanji) {
 		allArr = taskHLine.concat(taskKLine)
-		allArr.sort(() => Math.random() - 0.5)
 	} else {
 		allArr = activeTask.odkanji.concat(activeTask.oskanji)
 		allKanji = [...allArr]
-		allArr.sort(() => Math.random() - 0.5)
 	}
 	onMount(() => {
 		if (activeTask.answerIn == 1) {
@@ -716,15 +714,9 @@
 	</div>
 {:else if activeTask.answerIn == 1}
 	<div class="h-full w-full text-center mt-10 md:mt-20">
-		{#if activeTask.kanji}
-			<h1 class="text-6xl font-semibold">
-				This is '{allArr[index][2].split('|')[0]}' <span class="font-jp">{allArr[index][0]}</span>
-			</h1>
-		{:else}
-			<h1 class="text-6xl font-semibold">
-				This is '{allArr[index][1].split('|')[0]}' <span class="font-jp">{allArr[index][0]}</span>
-			</h1>
-		{/if}
+		<h1 class="text-6xl font-semibold">
+			This is '{activeTask.kanji ? allArr[index][2].split('|')[0] : allArr[index][1].split('|')[0]}' <span class="font-jp">{allArr[index][0]}</span>
+		</h1>
 		{@html nudge}
 	</div>
 	<div class="w-screen h-[40vh] fixed bottom-0 left-0 p-5 lg:px-16 bg-highlight lg:flex lg:flex-row overflow-y-auto">
