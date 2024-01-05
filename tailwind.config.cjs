@@ -10,6 +10,9 @@ module.exports = {
 				incorrect: '#EF233C',
 				fade: '#6b7280',
 			},
+			transitionProperty: {
+                'width': 'width'
+            },
 		},
 		fontFamily: {
 			sans: ['Inter', 'sans-serif'],

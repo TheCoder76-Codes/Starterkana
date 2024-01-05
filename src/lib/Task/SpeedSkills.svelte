@@ -388,7 +388,8 @@
 
 		let inte = setInterval(() => {
 			width++
-			progressBar.style.width = width + '%'
+			// progressBar.style.width = width + '%'
+			document.getElementById('progressBar').style.width = width + '%'
 			if (width >= 100) {
 				clearInterval(inte)
 				allcompleted()
@@ -708,7 +709,7 @@
 	</div>
 	<div class="fixed bottom-0 left-0 w-[calc(100vw-80px)] m-10">
 		<div class="w-full h-5 rounded-full bg-highlight">
-			<div class="bg-main h-5 rounded-full w-0" bind:this={progressBar} />
+			<div class="bg-main h-5 rounded-full w-0 tbar" bind:this={progressBar}  id="progressBar" />
 		</div>
 	</div>
 {:else}
@@ -724,7 +725,7 @@
 				{@html nudge}
 			</div>
 			<div class="w-full h-5 rounded-full bg-highlight">
-				<div class="bg-main h-5 rounded-full w-0" bind:this={progressBar} />
+				<div class="bg-main h-5 rounded-full w-0 tbar" bind:this={progressBar} id="progressBar" />
 			</div>
 		</div>
 	</div>

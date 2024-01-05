@@ -13,3 +13,11 @@
 	-webkit-filter: brightness(98%);
 	-ms-filter: brightness(98%);
 }
+
+.tbar {
+	-webkit-transition:1000ms linear;
+	-moz-transition:1000ms linear;
+	-o-transition:1000ms linear;
+	-ms-transition:1000ms linear;
+	transition:1000ms linear;
+}
