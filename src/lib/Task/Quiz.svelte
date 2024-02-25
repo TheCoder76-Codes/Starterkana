@@ -715,9 +715,11 @@
 		finished = false
 	}
 
-	document.body.addEventListener('touchend', function () {
-		kcan()
-	})
+	if (activeTask.answerIn == 1) {
+		document.body.addEventListener('touchend', function () {
+			kcan()
+		})
+	}
 </script>
 
 {#if finished}
