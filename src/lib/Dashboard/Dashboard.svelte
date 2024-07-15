@@ -12,7 +12,7 @@
 	let dev = false
 	let liveGame = false
 
-	let liveEndpoint = 'https://starterkana-live.onrender.com'
+	let liveEndpoint = window.location.href.includes('localhost') ? 'http://localhost:3000' :'https://starterkana-live.onrender.com'
 
 	let activeTask = null
 	let sTask = false

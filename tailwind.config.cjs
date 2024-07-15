@@ -4,11 +4,11 @@ module.exports = {
 	theme: {
 		extend: {
 			colors: {
-				highlight: '#FADDE1',
-				main: '#FFA6C1',
-				correct: '#719E4B',
-				incorrect: '#EF233C',
-				fade: '#6b7280',
+				highlight: 'var(--highlight)',
+				main: 'var(--main)',
+				correct: 'var(--correct)',
+				incorrect: 'var(--incorrect)',
+				fade: 'var(--fade)',
 			},
 			transitionProperty: {
                 'width': 'width'

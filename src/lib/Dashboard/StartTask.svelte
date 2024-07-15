@@ -2,6 +2,7 @@
 	import Quiz from '../Task/Quiz.svelte'
 	import Learn from '../Task/Learn.svelte'
 	import SpeedSkills from '../Task/SpeedSkills.svelte'
+	import Plain from '../Task/Plain.svelte'
 	export let activeTask
 	export let userData
 	export let sTask
@@ -21,8 +22,38 @@
 			type: 0, // 0 QUIZ 1 LEARN 2 SPEED 3 TEST
 			answerIn: 0, // 0 ROMANJI 1 JAPENESE
 			kanji: false, // FALSE kana TRUE kanji (CANT BE BOTH)
+			plain: false, // FALSE not plain form or OBJ for plain form
 		}
 	}
+
+	let plainFormSchemaFilled = {
+		answerIn: {
+			conjugations: [
+				'a', 'i', 'u', 'e', 'ou',
+			],
+			formal: [
+				'present', 'past', 'negPresent', 'negPast', 'pleaseCommand', 'want', 'lets',
+			],
+			informal: [
+				'present', 'past', 'negPresent', 'negPast', 'command', 'want', 'lets',
+			],
+		},
+		groups: [
+			'godan', 'ichidan', 'irregular'
+		],
+		questions: 20,
+	}
+
+	let plainFormSchema = {
+		answerIn: {
+			conjugations: [],
+			formal: [],
+			informal: [],
+		},
+		groups: [],
+		questions: 20,
+	}
+
 	if (activeTask.incorrect) activeTask.incorrect = null
 	let inTask = false
 
@@ -35,7 +66,17 @@
 	}
 
 	function startTask() {
-		if (activeTask.kanji) {
+		if (activeTask.plain) {
+			let {plain} = activeTask // for easy access
+			// Need at least one from verb group and at least one answerIn
+			// Concat for if
+			let answersIn_ = plain.answerIn.conjugations.concat(plain.answerIn.formal, plain.answerIn.informal)
+			if (answersIn_.length == 0 || plain.groups.length == 0 || plain.questions < 1) {
+				invalid = true
+			} else {
+				inTask = true
+			}			
+		} else if (activeTask.kanji) {
 			// Ensure the other arrays are clear
 			activeTask.hiragana = []
 			activeTask.katakana = []
@@ -569,10 +610,41 @@
 			['話', 'はな|はなし|ワ', 'hana|hanashi|wa', 'tale|talk|to talk|to speak|speak'],
 		]
 	}
+
+	function copy(obj) {
+		return JSON.parse(JSON.stringify(obj))
+	}
+
+	let plainFormMapping = {
+		'a': '～あ',
+		'i': '～い',
+		'u': '～う',
+		'e': '～え',
+		'ou': '～おう',
+		'fpresent': 'Present (Formal) ～ます',
+		'fpast': 'Past (Formal) ～ました',
+		'fnegPresent': 'Negative Present (Formal) ～ません',
+		'fnegPast': 'Negative Past (Formal) ～ませんでした',
+		'fpleaseCommand': 'Please Command (Formal) ～てください',
+		'fwant': 'Want (Formal) ～たいです',
+		'flets': 'Lets (Formal) ～ましょう',
+		'ipresent': 'Present (Informal) ～う/る',
+		'ipast': 'Past (Informal) ～た',
+		'inegPresent': 'Negative Present (Informal) ～ない',
+		'inegPast': 'Negative Past (Informal) ～なかった',
+		'icommand': 'Command (Informal) ～て',
+		'iwant': 'Want (Informal) ～たい',
+		'ilets': 'Lets (Informal) ～おう',
+		'ichidan': 'Ichidan (Group 2) ～る',
+		'godan': 'Godan (Group 1) ～う',
+		'irregular': 'Irregular - する/くる',
+	}
 </script>
 
 {#if inTask}
-	{#if activeTask.type == 0}
+	{#if activeTask.plain}
+		<Plain bind:userData bind:activeTask bind:sTask bind:streaks />
+	{:else if activeTask.type == 0}
 		<Quiz bind:userData bind:activeTask bind:sTask bind:streaks />
 	{:else if activeTask.type == 1}
 		<Learn bind:userData bind:activeTask bind:sTask bind:streaks />
@@ -584,6 +656,7 @@
 {:else}
 	<h1 class="text-2xl font-semibold">Starting task</h1>
 	<div class="block md:grid grid-cols-2 w-full mt-2 gap-5">
+		{#if !activeTask.plain}
 		<div>
 			<label class="text-lg m-2">
 				<input type="radio" name="type" value={0} bind:group={activeTask.type} />
@@ -624,11 +697,13 @@
 				</label> <br />
 			{/if}
 		</div>
-		<div class="col-span-2 w-full bg-highlight p-2 rounded-lg grid grid-cols-2 gap-5">
-			<button class="{activeTask.kanji ? 'bg-highlight' : 'bg-main'} px-2 py-1 text-xl text-center rounded-lg" on:click={() => {activeTask.kanji=false}}>Hiragana/Katakana</button>
-			<button class="{activeTask.kanji ? 'bg-main' : 'bg-highlight'} px-2 py-1 text-xl text-center rounded-lg" on:click={() => {activeTask.kanji=true}}>Kanji</button>
+		{/if}
+		<div class="col-span-2 w-full bg-highlight p-2 rounded-lg lg:grid grid-cols-3 gap-5">
+			<button class="{!activeTask.kanji && !activeTask.plain ? 'bg-main' : 'bg-highlight'} px-2 py-1 text-xl text-center rounded-lg" on:click={() => {activeTask.kanji=false;activeTask.plain=false}}>Hiragana/Katakana</button>
+			<button class="{activeTask.kanji ? 'bg-main' : 'bg-highlight'} px-2 py-1 text-xl text-center rounded-lg" on:click={() => {activeTask.kanji=true;activeTask.plain=false}}>Kanji</button>
+			<button class="{activeTask.plain ? 'bg-main' : 'bg-highlight'} px-2 py-1 text-xl text-center rounded-lg" on:click={() => {activeTask.kanji=false;activeTask.plain=copy(plainFormSchema)}}>Plain Form</button>
 		</div>
-		{#if !activeTask.kanji}
+		{#if !activeTask.kanji && !activeTask.plain}
 		<div class="text-center">
 			<h1 class="text-xl font-semibold">Hiragana</h1>
 			<h2 class="text-lg font-semibold mt-2">Main Hiragana</h2>
@@ -830,7 +905,7 @@
 				</div>
 			{/if}
 		</div>
-		{:else}
+		{:else if activeTask.kanji || !activeTask.plain}
 			<div class="text-center">
 				<h1 class="text-xl font-semibold">Obento Deluxe</h1>
 				<label>
@@ -1016,6 +1091,94 @@
 						Unit 12
 					</div>
 				</label>
+			</div>
+		{:else}
+			<div class="lg:grid grid-cols-4 col-span-2 w-full gap-5">
+				<div class="col-span-3 text-center">
+					<p class="text-lg">Questions</p>
+				</div>
+				<div class="col-span-1 text-center">
+					<p class="text-lg">Verb Groups</p>
+				</div>
+				<div>
+					<h2 class="text-xl font-medium">Conjugations</h2>
+					{#each plainFormSchemaFilled['answerIn']['conjugations'] as conj}
+						<label>
+							<input
+								type="checkbox"
+								class="peer hidden"
+								name="gana"
+								value={conj}
+								bind:group={activeTask.plain.answerIn.conjugations}
+							/>
+							<div class="bg-highlight peer-checked:bg-main p-2 rounded-md hover:cursor-pointer my-2">
+								{plainFormMapping[conj]}
+							</div>
+						</label>
+					{/each}
+				</div>
+				<div>
+					<h2 class="text-xl font-medium">Formal</h2>
+					{#each plainFormSchemaFilled['answerIn']['formal'] as item}
+						<label>
+							<input
+								type="checkbox"
+								class="peer hidden"
+								name="gana"
+								value={item}
+								bind:group={activeTask.plain.answerIn.formal}
+							/>
+							<div class="bg-highlight peer-checked:bg-main p-2 rounded-md hover:cursor-pointer my-2">
+								{plainFormMapping['f' + item]}
+							</div>
+						</label>
+					{/each}
+				</div>
+				<div>
+					<h2 class="text-xl font-medium">Informal</h2>
+					{#each plainFormSchemaFilled['answerIn']['informal'] as item}
+						<label>
+							<input
+								type="checkbox"
+								class="peer hidden"
+								name="gana"
+								value={item}
+								bind:group={activeTask.plain.answerIn.informal}
+							/>
+							<div class="bg-highlight peer-checked:bg-main p-2 rounded-md hover:cursor-pointer my-2">
+								{plainFormMapping['i' + item]}
+							</div>
+						</label>
+					{/each}
+				</div>
+				<div>
+					<h2 class="text-xl font-medium">Verb Groups</h2>
+					{#each plainFormSchemaFilled['groups'] as group}
+						<label>
+							<input
+								type="checkbox"
+								class="peer hidden"
+								name="gana"
+								value={group}
+								bind:group={activeTask.plain.groups}
+							/>
+							<div class="bg-highlight peer-checked:bg-main p-2 rounded-md hover:cursor-pointer my-2">
+								{plainFormMapping[group]}
+							</div>
+						</label>
+					{/each}
+				</div>
+				<div class="col-span-4">
+					<h2 class="text-xl font-medium text-center mb-2">Number of questions</h2>
+					<div class="w-full bg-highlight p-2 rounded-lg lg:grid grid-cols-5 gap-5">
+						<button class="{activeTask.plain.questions == 20 ? 'bg-main' : 'bg-highlight'} px-2 py-1 text-xl text-center rounded-lg" on:click={() => {activeTask.plain.questions = 20}}>20</button>
+						<button class="{activeTask.plain.questions == 40 ? 'bg-main' : 'bg-highlight'} px-2 py-1 text-xl text-center rounded-lg" on:click={() => {activeTask.plain.questions = 40}}>40</button>
+						<button class="{activeTask.plain.questions == 60 ? 'bg-main' : 'bg-highlight'} px-2 py-1 text-xl text-center rounded-lg" on:click={() => {activeTask.plain.questions = 60}}>60</button>
+						<button class="{activeTask.plain.questions == 80 ? 'bg-main' : 'bg-highlight'} px-2 py-1 text-xl text-center rounded-lg" on:click={() => {activeTask.plain.questions = 80}}>80</button>
+						<button class="{activeTask.plain.questions == 100? 'bg-main' : 'bg-highlight'} px-2 py-1 text-xl text-center rounded-lg" on:click={() => {activeTask.plain.questions = 100}}>100</button>
+					</div>
+				</div>
+				
 			</div>
 		{/if}
 		<div class="col-span-2 text-center">

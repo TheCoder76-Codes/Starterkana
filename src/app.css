@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+	--highlight: #FADDE1;
+	--main: #FFA6C1;
+	--correct: #719E4B;
+	--incorrect: #EF233C;
+	--fade: #6b7280;
+}
+
 .btn-main {
 	@apply bg-highlight text-black p-2.5 rounded-lg m-2 transition-transform ease-in-out duration-300 hover:scale-105;
 }
@@ -20,4 +28,12 @@
 	-o-transition:1000ms linear;
 	-ms-transition:1000ms linear;
 	transition:1000ms linear;
+}
+
+.tbar2 {
+	-webkit-transition:1000ms ease-in-out;
+	-moz-transition:1000ms ease-in-out;
+	-o-transition:1000ms ease-in-out;
+	-ms-transition:1000ms ease-in-out;
+	transition:1000ms ease-in-out;
 }

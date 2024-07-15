@@ -3,7 +3,7 @@
 	import Player from './Player.svelte'
 	import Host from './Host.svelte'
 	export let userData
-	let endpoint = 'https://starterkana-live.onrender.com/'
+	let endpoint = window.location.href.includes('localhost') ? 'http://localhost:3000/' :'https://starterkana-live.onrender.com/'
 
 	const socket = io(endpoint)
 
