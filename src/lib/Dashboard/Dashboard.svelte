@@ -9,6 +9,7 @@
 	export let userData
 	export let streaks
 	export let errors
+	export let colorsList
 	let dev = false
 	let liveGame = false
 
@@ -67,6 +68,19 @@
 	fetchWithTimeout(liveEndpoint + '/status', { timeout: 8000 })
 		.then(() => (offline = 1))
 		.catch(() => (offline = 2))
+
+	function changeColors() {
+		let colors = localStorage.getItem('colorTheme') || 'pink' // either 'pink' or 'green'
+
+		colors = colors == 'pink' ? 'green' : 'pink'
+
+		const root = document.querySelector(':root');
+
+		root.style.setProperty('--highlight', colorsList[colors]['--highlight']);
+		root.style.setProperty('--main', colorsList[colors]['--main']);
+
+		localStorage.setItem('colorTheme', colors)
+	}
 </script>
 
 <MobileWarning />
@@ -133,6 +147,9 @@
 				</button>
 				<button class="text-fade text-lg hover:underline hover:cursor-pointer mt-5" on:click={setupSync}>
 					Setup Sync ↗
+				</button>
+				<button class="text-fade text-lg hover:underline hover:cursor-pointer mt-5" on:click={changeColors}>
+					Change colors ◐
 				</button>
 			</div>
 		{/if}

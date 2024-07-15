@@ -36,6 +36,25 @@
 	// 	points: 0,
 	//	cookies: true,
 	// }
+
+	let colors = localStorage.getItem('colorTheme') || 'pink' // either 'pink' or 'green'
+
+	const root = document.querySelector(':root');
+
+	let colorsList = {
+		pink: {
+			'--highlight': '#FADDE1',
+			'--main': '#FFA6C1',
+		},
+		green: {
+			'--highlight': '#d5ebd4',
+			'--main': '#79a778',
+		}
+	}
+
+	root.style.setProperty('--highlight', colorsList[colors]['--highlight']);
+	root.style.setProperty('--main', colorsList[colors]['--main']);
+
 	if (!localStorage.getItem('isSetUp')) {
 		setup = false
 	} else if (localStorage.getItem('isSetUp') == 'true') {
@@ -100,7 +119,7 @@
 {:else if !setup}
 	<Setup bind:setup bind:userData />
 {:else if setup}
-	<Dash bind:userData bind:streaks bind:errors />
+	<Dash bind:userData bind:streaks bind:errors bind:colorsList />
 {:else}
 	<Setup bind:setup bind:userData />
 {/if}
