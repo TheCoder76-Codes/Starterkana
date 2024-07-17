@@ -2,6 +2,7 @@
 	import LiveQuiz from './LiveQuiz.svelte'
 	import LiveLearn from './LiveLearn.svelte'
 	import LiveSpeedSkills from './LiveSpeedSkills.svelte'
+	import LivePlain from './LivePlain.svelte';
 
 	export let userData
 	export let game
@@ -48,8 +49,9 @@
 {#if inTask}
 	<main class="p-10 h-screen overflow-x-hidden">
 		<h2 class="text-2xl font-semibold text-main mb-2">Live</h2>
-
-		{#if activeTask.type == 0}
+		{#if activeTask.plain}
+			<LivePlain bind:userData bind:activeTask bind:game {socket} />
+		{:else if activeTask.type == 0}
 			<LiveQuiz bind:userData bind:activeTask bind:game {socket} />
 		{:else if activeTask.type == 1}
 			<LiveLearn bind:userData bind:activeTask bind:game {socket} />

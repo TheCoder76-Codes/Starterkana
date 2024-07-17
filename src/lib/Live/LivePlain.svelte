@@ -6,7 +6,8 @@
     export let activeTask // The active task object
 	export let userData // Self-explanatory
 	export let sTask // Start task
-	export let streaks // Obselete
+	export let game // Obselete
+    export let socket
 
     // In here, we don't need to save out the game state, including correct/incorrect answers
     // Only need to save points
@@ -549,6 +550,7 @@
 		groups: [
 			'ichidan', 'godan', 'irregular'
 		],
+        questionsArr: [],
 		questions: 20,
 	}
 
@@ -566,7 +568,7 @@
     }
     let index = 0
 
-    function fillQuestions() {
+    function fillQuestionsNonLive() {
         let questions = []
 
         let applicableVerbs = []
@@ -717,13 +719,22 @@
         return questions
     }
 
+    function fillQuestions() {
+        return activeTask.questionsArr
+    }
+
     let questions = fillQuestions()
     let imeInput
     let progBar
 
+    // Live
+
+    let startingTime = 0
+
     onMount(() => {
         wanakana.bind(imeInput, { IMEMode: 'toHiragana' })
         imeInput.focus()
+        startingTime = Date.now()
     })
     
     let conjHintMapping = {
@@ -773,6 +784,8 @@
 		'irregular': 'Irregular - する/くる',
 	}
 
+    
+
     function handleSubmit() {
         questions[index]["input"] = wanakana.toHiragana(questions[index]["input"])
         questions[index]["input"] = questions[index]["input"].replace(/[^あ-ん]/g, '')
@@ -797,44 +810,32 @@
     }
 
     let finish = false
-    let viewingResults = false
+
+    let endingData = {
+        time: '',
+        percent: '',
+        correct: 0,
+        incorrect: 0,
+        total: 0,
+    }
     
     let percentage = 0
     let completedStr = ''
     let totalCorrect = 0
     function finished() {
+        endingData.time = ((Date.now() - startingTime) / 1000).toFixed(2) // seconds
+        finish = true
+
+
         totalCorrect = questions.reduce((acc, cur) => {
             return acc + (cur.correct ? 1 : 0)
         }, 0)
         percentage = Math.round((totalCorrect / questions.length) * 100)
 
-        let completedStrs = []
-
-        if (plain.answerIn.conjugations.length > 0) {
-            // Using the Intl ListFormat API, list the conjugations
-            let list = new Intl.ListFormat('en', { style: 'long', type: 'conjunction' })
-            let conjs = plain.answerIn.conjugations.map((i) => {
-                return plainFormMapping[i]
-            })
-            completedStrs.push(list.format(conjs) + ' conjugations')
-        }
-        if (plain.answerIn.formal.length > 0) {
-            let list = new Intl.ListFormat('en', { style: 'long', type: 'conjunction' })
-            let formals = plain.answerIn.formal.map((i) => {
-                return plainFormMapping['f' + i]
-            })
-            completedStrs.push(list.format(formals) + ' form' + (plain.answerIn.formal.length > 1 ? 's' : ''))
-        }
-        if (plain.answerIn.informal.length > 0) {
-            let list = new Intl.ListFormat('en', { style: 'long', type: 'conjunction' })
-            let informals = plain.answerIn.informal.map((i) => {
-                return plainFormMapping['i' + i]
-            })
-            completedStrs.push(list.format(informals) + ' form' + (plain.answerIn.informal.length > 1 ? 's' : ''))
-        }
-        let list = new Intl.ListFormat('en', { style: 'long', type: 'conjunction' })
-        completedStr = list.format(completedStrs)
-        finish = true
+        endingData.percent = percentage + '%'
+        endingData.correct = totalCorrect
+        endingData.total = questions.length
+        endingData.incorrect = questions.length - totalCorrect
 
         // Points
         let points = 0
@@ -856,99 +857,38 @@
         if (typeof userData.points == 'string') {
 			userData.points = parseInt(userData.points)
 		}
-        
+
         userData.points += points
 
         if (userData.cookies) {
 			localStorage.setItem('userData', JSON.stringify(userData))
 		}
+
+        activeTask.totalIncorrect = endingData.incorrect
+		activeTask.totalCompleted = endingData.total
+		activeTask.totalCorrect = endingData.correct
+		activeTask.percentage = endingData.percent
+		activeTask.time = endingData.time
         
-    }
-
-    let obj = {}
-    function viewResults() {
-        questions.forEach(question => {
-            if (obj?.[question["conj"]]) {
-                obj[question["conj"]]["questions"].push(question)
-            } else {
-                obj[question["conj"]] = {
-                    totalCorrect: 0,
-                    total: 0,
-                    questions: [question]
-                }
-            }
-        })
-
-        Object.keys(obj).forEach(key => {
-            obj[key]["totalCorrect"] = obj[key]["questions"].reduce((acc, cur) => {
-                return acc + (cur.correct ? 1 : 0)
-            }, 0)
-            obj[key]["total"] = obj[key]["questions"].length
-        })
-        viewingResults = true
-        finish = false
+        socket.emit('playerCompletedTask', activeTask, game, userData, (res) => (game = res))
     }
 
 </script>
 
 {#if finish}
-    <div class="w-full h-full grid place-content-center overflow-hidden">
-        {#if percentage >= 80}
-            <div class="text-center">
-                <h1 class="text-4xl text-correct font-semibold">Well done!</h1>
-                <p class="text-correct my-2.5">
-                    You have successfully completed {completedStr}!
-                </p>
-                <button
-                    class="btn-main"
-                    on:click={() => {
-                        activeTask = null
-                        sTask = false
-                    }}>← Go back to your dashboard</button
-                >
-                <button class="btn-main" on:click={viewResults}>View in-depth results →</button>
-            </div>
-        {:else}
-            <div class="text-center">
-                <h1 class="text-4xl text-incorrect font-semibold">Nice try</h1>
-                <p class="text-incorrect my-2.5">
-                    You didn't manage to complete {completedStr}. Try again next time.
-                </p>
-                <button
-                    class="btn-main"
-                    on:click={() => {
-                        activeTask = null
-                        sTask = false
-                    }}>← Go back to your dashboard</button
-                >
-                <button class="btn-main" on:click={viewResults}>View in-depth results →</button>
-            </div>
-        {/if}
-    </div>
-{:else if viewingResults}
-    <h1 class="text-2xl font-semibold">
-        You got <span class="text-main">{totalCorrect}</span> correct out of
-        <span class="text-main">{questions.length}</span>, with a score of <span class="text-main">{percentage}%</span>.
-    </h1>
-    <h2 class="text-xl mt-2 font-semibold">Here's your breakdown:</h2>
-    <div class="block md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4  2xl:grid-cols-5">
-        {#each Object.entries(obj) as [conj, info]}
-            <div class="m-2 bg-highlight p-5 text-center rounded-lg">
-                <h1 class="text-4xl font-jp">～{plainFormMapping[conj].split('～')[1]}</h1>
-                <h2 class="text-base italic font-medium mt-1">{plainFormMapping[conj].split('～')[0]}</h2>
-                <h2 class="text-xl font-medium mt-1">{Math.round((info.totalCorrect / info.total) * 100)}% correct</h2>
-                <h3 class="text-lg mt-1">{info.totalCorrect}/{info.total}</h3>
-            </div>
-        {/each}
+    <div
+        class="bg-gradient-to-bl from-highlight to-main w-screen h-screen grid place-items-center fixed top-0 left-0 overflow-hidden"
+    >
+    <div class="text-center">
+        <h1 class="font-semibold text-5xl text-white mb-2">Finished!</h1>
+        <h3 class="font-medium text-2xl text-white">
+            You completed all {endingData.total} questions in {endingData.time} seconds!
+        </h3>
+        <p class="text-white text-md">Wait for the host to start another game.</p>
     </div>
 
-    <button
-        class="btn-main"
-        on:click={() => {
-            activeTask = null
-            sTask = false
-        }}>← Go back to your dashboard</button
-    >
+    <h2 class="font-semibold text-2xl absolute bottom-2.5 left-2.5 text-white">Starterkana.</h2>
+    </div>
 
 {:else}
     <div class="flex flex-col justify-between items-center w-full h-full overflow-hidden pb-14">

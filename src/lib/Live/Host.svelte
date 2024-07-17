@@ -14,6 +14,35 @@
 		type: 0, // 0 QUIZ 1 LEARN 2 SPEED 3 TEST
 		answerIn: 0, // 0 ROMANJI 1 JAPENESE
 		kanji: false, // FALSE kana TRUE kanji (CANT BE BOTH)
+		plain: false, // FALSE not plain OBJ for options
+	}
+
+	let plainFormSchemaFilled = {
+		answerIn: {
+			conjugations: [
+				'a', 'i', 'u', 'e', 'ou',
+			],
+			formal: [
+				'present', 'past', 'negPresent', 'negPast', 'pleaseCommand', 'want', 'lets',
+			],
+			informal: [
+				'present', 'past', 'negPresent', 'negPast', 'command', 'want', 'lets',
+			],
+		},
+		groups: [
+			'godan', 'ichidan', 'irregular'
+		],
+		questions: 20,
+	}
+
+	let plainFormSchema = {
+		answerIn: {
+			conjugations: [],
+			formal: [],
+			informal: [],
+		},
+		groups: [],
+		questions: 20,
 	}
 
 	function backToCode() {
@@ -26,6 +55,7 @@
 			type: 0, // 0 QUIZ 1 LEARN 2 SPEED 3 TEST
 			answerIn: 0, // 0 ROMANJI 1 JAPENESE
 			kanji: false, // FALSE kana TRUE kanji (CANT BE BOTH)
+			plain: false,
 		}
 		startingLiveTask = false
 		startingTask = false
@@ -107,7 +137,13 @@
 			</div>
 			{#each game.finishers as finisher, index}
 				<div class="flex place-content-between items-center w-full border-b border-fade last:border-0 p-5">
-					{#if game.task.type == 2}
+					{#if game.task.plain}
+						<h1 class="text-2xl font-medium"><b class="font-semibold">#{index + 1} </b> {finisher.name}</h1>
+						<p class="text-right">
+							{finisher.task.time} seconds • {finisher.task.percentage} • {finisher.task
+								.totalCorrect}/{finisher.task.totalCompleted} correct
+						</p>
+					{:else if game.task.type == 2}
 						<h1 class="text-2xl font-medium"><b class="font-semibold">#{index + 1} </b> {finisher.name}</h1>
 						<p class="text-right">
 							{finisher.task.countingCorrect} completed • {finisher.task.percentage}% • {finisher.task
