@@ -776,6 +776,9 @@
     function handleSubmit() {
         questions[index]["input"] = wanakana.toHiragana(questions[index]["input"])
         questions[index]["input"] = questions[index]["input"].replace(/[^あ-ん]/g, '')
+        if (questions[index]["input"] == "") {
+            return
+        }
         if (questions[index]["input"] == questions[index]["answer"]) {
             index++
         } else {
